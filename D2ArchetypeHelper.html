@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+    <head>
+
+    <title>D2 Armor 3.0 Help</title>
+    <link rel = "stylesheet" href="D2ArchetypeHelper.css">
+    <link rel = "icon" type = "traveler" href = "traveler.png">
+    <style>
+        :root {
+            --primary-color: rgb(255, 174, 0);
+            --dark-bg: rgb(30, 30, 30);
+            --medium-bg: rgb(50, 50, 50);
+            --light-color: rgb(200, 130, 0);
+            --text-white: rgb(255, 255, 255);
+        }
+    </style>
+
+    </head>
+
+<body>
+
+    <ul id="navMenu">
+        <li><a href="#" id="navArmorPicker" class="nav-link active">Armor Picker</a></li>
+        <li><a href="#" id="navSettings" class="nav-link">Settings</a></li>
+    </ul>
+
+    <h1 style = "text-align: center;">Destiny 2 Armor Archetype Helper</h1>
+<!-- Main Content Wrapper -->
+<div id="armorPickerContainer" class="page-container active">
+    <p style = "text-align: center;">
+        This little website is made to help players 
+        who want to know the exact armor archetypes 
+        they should farm to achieve a certain stat spread.
+        Another helpful armor picker for Destiny 2 >>
+        <a href="https://d2armorpicker.com/">D2ArmorPicker Website</a>
+    </p>
+
+<hr>
+
+<!--Table for Archetypes-->
+<table style = "width:20%;float:right">
+    <tr>
+        <th colspan ="3">All Armor Archetypes</th>
+    </tr>
+    <tr>
+        <th>Archetypes</th>
+        <th>Primary Stat</th>
+        <th>Secondary Stat</th>
+    </tr>
+    <tr>
+        <td>Siegebreaker</td>
+        <td>Health</td>
+        <td>Grenade</td>
+    </tr>
+    <tr>
+        <td>Bulwark</td>
+        <td>Health</td>
+        <td>Class</td>
+    </tr>
+    <tr>
+        <td>Brawler</td>
+        <td>Melee</td>
+        <td>Health</td>
+    </tr>
+    <tr>
+        <td>Skirmisher</td>
+        <td>Melee</td>
+        <td>Weapons</td>
+    </tr>
+    <tr>
+        <td>Grenadier</td>
+        <td>Grenade</td>
+        <td>Super</td>
+    </tr>
+    <tr>
+        <td>Demolitionist</td>
+        <td>Grenade</td>
+        <td>Class</td>
+    </tr>
+    <tr>
+        <td>Colossus</td>
+        <td>Super</td>
+        <td>Health</td>
+    </tr>
+    <tr>
+        <td>Paragon</td>
+        <td>Super</td>
+        <td>Melee</td>
+    </tr>
+    <tr>
+        <td>Reaver</td>
+        <td>Class</td>
+        <td>Melee</td>
+    </tr>
+    <tr>
+        <td>Specialist</td>
+        <td>Class</td>
+        <td>Weapons</td>
+    </tr>
+    <tr>
+        <td>Gunner</td>
+        <td>Weapons</td>
+        <td>Grenade</td>
+    </tr>
+    <tr>
+        <td>Powerhouse</td>
+        <td>Weapons</td>
+        <td>Super</td>
+    </tr>
+
+</table>
+
+<p>All armor calculations assume armor is TIER 5</p>
+
+<p>Primary Stat: 30 Points in Stat</p>
+<p>Secondary Stat: 25 Points in Stat</p>
+<p>Tertiary Stat: 20 Points in Stat | Randomized from the 4 remaining stat pools</p>
+<p>Armor can recieve up to 15 points in total from upgrades, that are placed into the remaining 3 lowest stat pools, 5 in each</p>
+<p>Tuning Slot: Armor can drop with a randomized tuning slot that you can activate. Allows for 5 points into rolled stat, and -5 points into selected.</p>
+<pre>               or</pre>
+<p>Tuning Slot: Can be used for 3 more points, 1 in each of the 3 lowest stat pools</p>
+
+<p>This tool will provide help in identifying what archetype you should grind for to achieve your perfect stat spread, from top to bottom order, starting from helmet.</p>
+<ol>
+    <li>Helmet</li>
+    <li>Gauntlets</li>
+    <li>Chest Armor</li>
+    <li>Leg Armor</li>
+    <li>Class Item</li>
+</ol>
+
+<br>
+<br>
+<br>
+<hr>
+
+<!-- Sliders and Results Wrapper -->
+<div id="sliderWrapper">
+    <!-- Left Column: Sliders and Controls -->
+    <div id="leftColumn">
+        <!-- Stat Sliders -->
+        <div id="sliderContainer">
+            <div class="slider-item">
+                <label for="slider-health">Health: <span id="sliderValue-health">100</span></label>
+                <br>
+                <input type="range" id="slider-health" min="0" max="200" step="5" value="100">
+            </div>
+            <div class="slider-item">
+                <label for="slider-melee">Melee: <span id="sliderValue-melee">100</span></label>
+                <br>
+                <input type="range" id="slider-melee" min="0" max="200" step="5" value="100">
+            </div>
+            <div class="slider-item">
+                <label for="slider-grenade">Grenade: <span id="sliderValue-grenade">100</span></label>
+                <br>
+                <input type="range" id="slider-grenade" min="0" max="200" step="5" value="100">
+            </div>
+            <div class="slider-item">
+                <label for="slider-super">Super: <span id="sliderValue-super">100</span></label>
+                <br>
+                <input type="range" id="slider-super" min="0" max="200" step="5" value="100">
+            </div>
+            <div class="slider-item">
+                <label for="slider-class">Class: <span id="sliderValue-class">100</span></label>
+                <br>
+                <input type="range" id="slider-class" min="0" max="200" step="5" value="100">
+            </div>
+            <div class="slider-item">
+                <label for="slider-weapons">Weapons: <span id="sliderValue-weapons">100</span></label>
+                <br>
+                <input type="range" id="slider-weapons" min="0" max="200" step="5" value="100">
+            </div>
+        </div>
+
+        <!-- Weighting Strategy Selection -->
+        <div id="weightingContainer">
+            <h3>Weighting Strategy</h3>
+            <button id="weighting-aggressive" class="weighting-btn">2x (Aggressive)</button>
+            <button id="weighting-balanced" class="weighting-btn active">1.5x (Balanced)</button> 
+            <p id="weightingStatus">Current: 1.5x (Balanced)</p>
+            <button id="searchButton">Search Combos</button>
+        </div>
+    </div>
+
+    <!-- Right Column: Fragment Bonuses -->
+    <div id="fragmentContainer">
+        <h3>Fragment Bonuses</h3>
+        <div class="compact-fragment-item">
+            <label for="fragment-health">Health: <span id="fragmentValue-health">0</span></label>
+            <input type="number" id="fragment-health" min="-50" max="50" value="0">
+        </div>
+        <div class="compact-fragment-item">
+            <label for="fragment-melee">Melee: <span id="fragmentValue-melee">0</span></label>
+            <input type="number" id="fragment-melee" min="-50" max="50" value="0">
+        </div>
+        <div class="compact-fragment-item">
+            <label for="fragment-grenade">Grenade: <span id="fragmentValue-grenade">0</span></label>
+            <input type="number" id="fragment-grenade" min="-50" max="50" value="0">
+        </div>
+        <div class="compact-fragment-item">
+            <label for="fragment-super">Super: <span id="fragmentValue-super">0</span></label>
+            <input type="number" id="fragment-super" min="-50" max="50" value="0">
+        </div>
+        <div class="compact-fragment-item">
+            <label for="fragment-class">Class: <span id="fragmentValue-class">0</span></label>
+            <input type="number" id="fragment-class" min="-50" max="50" value="0">
+        </div>
+        <div class="compact-fragment-item">
+            <label for="fragment-weapons">Weapons: <span id="fragmentValue-weapons">0</span></label>
+            <input type="number" id="fragment-weapons" min="-50" max="50" value="0">
+        </div>
+    </div>
+</div>
+
+    <!-- Results Display -->
+    <div id="resultsContainer">
+        <h2>Results</h2>
+        <p>Total: <span id="totalPoints">0</span></p>
+        <p>Health: <span id="result-health">0</span></p>
+        <p>Melee: <span id="result-melee">0</span></p>
+        <p>Grenade: <span id="result-grenade">0</span></p>
+        <p>Super: <span id="result-super">0</span></p>
+        <p>Class: <span id="result-class">0</span></p>
+        <p>Weapons: <span id="result-weapons">0</span></p>
+    </div>
+
+    <!-- Armor Pieces Container with Summary Results -->
+    <div id="armorWrapper">
+        <div id="armorContainer">
+            <h2>Armor Pieces</h2>
+            <div id="armorGrid">
+                <div class="armor-row armor-header">
+                    <div class="armor-item">Armor</div>
+                    <div class="archetype-item">Archetype</div>
+                    <div class="stat-details">1st + 2nd Stat</div>
+                    <div class="tertiary-stat">3rd Stat</div>
+                    <div class="upgrade-stats">Bonus Stat</div>
+                    <div class="mod-recommendation">+10 Mod</div>
+                    <div class="tuning-slot">+5/-5 Tuning</div>
+                </div>
+                <div class="armor-row">
+                    <div class="armor-item">Helmet</div>
+                    <div class="archetype-item" id="archetype-helmet"></div>
+                    <div class="stat-details" id="stats-helmet"></div>
+                    <div class="tertiary-stat" id="tertiary-helmet"></div>
+                    <div class="upgrade-stats" id="upgrade-helmet"></div>
+                    <div class="mod-recommendation" id="mod-helmet"></div>
+                    <div class="tuning-slot" id="tuning-helmet"></div>
+                </div>
+                <div class="armor-row">
+                    <div class="armor-item">Gauntlets</div>
+                    <div class="archetype-item" id="archetype-gauntlets"></div>
+                    <div class="stat-details" id="stats-gauntlets"></div>
+                    <div class="tertiary-stat" id="tertiary-gauntlets"></div>
+                    <div class="upgrade-stats" id="upgrade-gauntlets"></div>
+                    <div class="mod-recommendation" id="mod-gauntlets"></div>
+                    <div class="tuning-slot" id="tuning-gauntlets"></div>
+                </div>
+                <div class="armor-row">
+                    <div class="armor-item">Chest Armor</div>
+                    <div class="archetype-item" id="archetype-chest"></div>
+                    <div class="stat-details" id="stats-chest"></div>
+                    <div class="tertiary-stat" id="tertiary-chest"></div>
+                    <div class="upgrade-stats" id="upgrade-chest"></div>
+                    <div class="mod-recommendation" id="mod-chest"></div>
+                    <div class="tuning-slot" id="tuning-chest"></div>
+                </div>
+                <div class="armor-row">
+                    <div class="armor-item">Leg Armor</div>
+                    <div class="archetype-item" id="archetype-legs"></div>
+                    <div class="stat-details" id="stats-legs"></div>
+                    <div class="tertiary-stat" id="tertiary-legs"></div>
+                    <div class="upgrade-stats" id="upgrade-legs"></div>
+                    <div class="mod-recommendation" id="mod-legs"></div>
+                    <div class="tuning-slot" id="tuning-legs"></div>
+                </div>
+                <div class="armor-row">
+                    <div class="armor-item">Class Item</div>
+                    <div class="archetype-item" id="archetype-class"></div>
+                    <div class="stat-details" id="stats-class"></div>
+                    <div class="tertiary-stat" id="tertiary-class"></div>
+                    <div class="upgrade-stats" id="upgrade-class"></div>
+                    <div class="mod-recommendation" id="mod-class"></div>
+                    <div class="tuning-slot" id="tuning-class"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Results Container -->
+        <div id="summaryResultsContainer">
+            <h2>Total Stats</h2>
+            <table id="summaryTable">
+                <tr>
+                    <th>Stat</th>
+                    <th>Fragments</th>
+                    <th>Before Bonus</th>
+                    <th>Bonus Stats</th>
+                    <th>After Bonus</th>
+                    <th>Final</th>
+                </tr>
+                <tr>
+                    <td>Health (HP)</td>
+                    <td id="summary-health-frag">0</td>
+                    <td id="summary-health-before">0</td>
+                    <td id="summary-health-bonus">0</td>
+                    <td id="summary-health-after">0</td>
+                    <td id="summary-health-final">0</td>
+                </tr>
+                <tr>
+                    <td>Melee (ML)</td>
+                    <td id="summary-melee-frag">0</td>
+                    <td id="summary-melee-before">0</td>
+                    <td id="summary-melee-bonus">0</td>
+                    <td id="summary-melee-after">0</td>
+                    <td id="summary-melee-final">0</td>
+                </tr>
+                <tr>
+                    <td>Grenade (GR)</td>
+                    <td id="summary-grenade-frag">0</td>
+                    <td id="summary-grenade-before">0</td>
+                    <td id="summary-grenade-bonus">0</td>
+                    <td id="summary-grenade-after">0</td>
+                    <td id="summary-grenade-final">0</td>
+                </tr>
+                <tr>
+                    <td>Super (SP)</td>
+                    <td id="summary-super-frag">0</td>
+                    <td id="summary-super-before">0</td>
+                    <td id="summary-super-bonus">0</td>
+                    <td id="summary-super-after">0</td>
+                    <td id="summary-super-final">0</td>
+                </tr>
+                <tr>
+                    <td>Class (CL)</td>
+                    <td id="summary-class-frag">0</td>
+                    <td id="summary-class-before">0</td>
+                    <td id="summary-class-bonus">0</td>
+                    <td id="summary-class-after">0</td>
+                    <td id="summary-class-final">0</td>
+                </tr>
+                <tr>
+                    <td>Weapons (WP)</td>
+                    <td id="summary-weapons-frag">0</td>
+                    <td id="summary-weapons-before">0</td>
+                    <td id="summary-weapons-bonus">0</td>
+                    <td id="summary-weapons-after">0</td>
+                    <td id="summary-weapons-final">0</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Stat Breakdown Container -->
+        <div id="statBreakdownContainer">
+            <h2>Stat Breakdown</h2>
+            <table id="breakdownTable">
+                <tr>
+                    <th>Stat</th>
+                    <th>Breakdown</th>
+                </tr>
+                <tr>
+                    <td>Health (HP)</td>
+                    <td id="breakdown-health">0</td>
+                </tr>
+                <tr>
+                    <td>Melee (ML)</td>
+                    <td id="breakdown-melee">0</td>
+                </tr>
+                <tr>
+                    <td>Grenade (GR)</td>
+                    <td id="breakdown-grenade">0</td>
+                </tr>
+                <tr>
+                    <td>Super (SP)</td>
+                    <td id="breakdown-super">0</td>
+                </tr>
+                <tr>
+                    <td>Class (CL)</td>
+                    <td id="breakdown-class">0</td>
+                </tr>
+                <tr>
+                    <td>Weapons (WP)</td>
+                    <td id="breakdown-weapons">0</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Page -->
+<div id="settingsContainer" class="page-container">
+    <h2>Settings</h2>
+    
+    <div class="settings-section">
+        <h3>Display Settings</h3>
+        <div class="settings-item">
+            <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                <div style="flex: 1;" id="colorThemeContainer">
+                    <label for="colorTheme">Color Theme:</label>
+                    <select id="colorTheme">
+                        <optgroup label="— Classic Colors —">
+                        <option value="gold">Gold (Default)</option>
+                        <option value="blue">Blue</option>
+                        <option value="red">Red</option>
+                        <option value="green">Green</option>
+                        <option value="purple">Purple</option>
+                        <option value="cyan">Cyan</option>
+                        <option value="orange">Orange</option>
+                        <option value="pink">Pink</option>
+                        <option value="teal">Teal</option>
+                        </optgroup>
+                        <optgroup label="— Destiny Colors —">
+                        <option value="vex">Vex Chrome</option>
+                        <option value="cabal">Cabal Imperium</option>
+                        <option value="hive">Hive Corruption</option>
+                        <option value="taken">Taken Void</option>
+                        <option value="dreaming">Dreaming City</option>
+                        <option value="gambit">Drifter's Gambit</option>
+                        <option value="lightbearer">Lightbearer</option>
+                        </optgroup>
+                        <option value="custom">Custom Theme</option>
+                    </select>
+                </div>
+
+                <div style="flex: 1; display: none;" id="aeroThemeContainer">
+                    <label for="aeroTheme">Aero Theme:</label>
+                    <select id="aeroTheme">
+                        <optgroup label="— Aero Themes —">
+                        <option value="cyan-aero">Default ✨ (Default Aero)</option>
+                        <option value="magenta-aero">Magenta Aero</option>
+                        <option value="yellow-aero">Yellow Aero</option>
+                        <option value="green-aero">Green Aero</option>
+                        <option value="orange-aero">Orange Aero</option>
+                        <option value="purple-aero">Purple Aero</option>
+                        </optgroup>
+                        <option value="custom-aero">🎨 Custom Aero</option>
+                    </select>
+                </div>
+                
+                <div style="flex: 1;">
+                    <label for="pageStyle">Page Style:</label>
+                    <select id="pageStyle">
+                        <option value="default">Default (Clean)</option>
+                        <option value="vex">Vex (Tech/Geometric)</option>
+                        <option value="cabal">Cabal (Military/Heavy)</option>
+                        <option value="hive">Hive (Organic/Creepy)</option>
+                        <option value="taken">Taken (Distorted/Glitch)</option>
+                        <option value="dreaming">Dreaming (Elegant/Magical)</option>
+                        <option value="gambit">Gambit (Industrial/Rough)</option>
+                        <option value="guardian">Guardian (Clean/Focused)</option>
+                    </select>
+                </div>
+                
+                <div style="flex: 1;">
+                    <label for="aestheticStyle">Aesthetic:</label>
+                    <select id="aestheticStyle">
+                        <option value="none">None</option>
+                        <option value="frutiger-aero">Frutiger Aero ✨</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Color Picker Section (Hidden by default) -->
+        <div id="customColorSection" style="display: none; margin-top: 15px; padding: 15px; border: 2px solid var(--primary-color); border-radius: 5px; background-color: var(--medium-bg);">
+            <h4 style="margin-top: 0; color: var(--primary-color);">🎨 Custom Theme Creator</h4>
+            <p style="color: var(--primary-color); font-size: 12px; margin: 5px 0;">Create your own unique theme by picking colors for the accent and background.</p>
+            
+            <div style="display: flex; gap: 20px; margin-top: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                    <label for="customPrimaryColor" style="color: var(--primary-color); font-weight: bold; font-size: 14px;">Primary Accent Color:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="customPrimaryColor" value="#ffae00" title="Pick primary accent color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid var(--primary-color); border-radius: 3px;">
+                        <span id="customPrimaryValue" style="color: var(--primary-color); font-size: 12px; font-family: monospace; min-width: 80px;">#ffae00</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                    <label for="customDarkColor" style="color: var(--primary-color); font-weight: bold; font-size: 14px;">Dark Background Color:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="customDarkColor" value="#1e1e1e" title="Pick dark background color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid var(--primary-color); border-radius: 3px;">
+                        <span id="customDarkValue" style="color: var(--primary-color); font-size: 12px; font-family: monospace; min-width: 80px;">#1e1e1e</span>
+                    </div>
+                </div>
+            </div>
+
+            <p style="color: var(--primary-color); font-size: 11px; margin-top: 10px; font-style: italic;">💡 Medium and Light variants are automatically generated from your primary color.</p>
+            <button id="resetCustomColorButton" style="margin-top: 12px; padding: 8px 16px; background-color: var(--medium-bg); color: var(--primary-color); border: 1px solid var(--primary-color); border-radius: 3px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 0 10px var(--primary-color)'" onmouseout="this.style.boxShadow='none'">Reset to Default</button>
+        </div>
+
+        <!-- Custom Aero Color Picker Section (Hidden by default) -->
+        <div id="customAeroColorSection" style="display: none; margin-top: 15px; padding: 15px; border: 2px solid rgba(var(--glow-color-rgb), 0.6); border-radius: 5px; background-color: rgba(15, 30, 50, 0.8); box-shadow: 0 0 10px rgba(var(--glow-color-rgb), 0.3);">
+            <h4 style="margin-top: 0; color: rgba(0, 255, 255, 0.9);">✨ Custom Aero Theme Creator</h4>
+            <p style="color: rgba(0, 255, 255, 0.7); font-size: 12px; margin: 5px 0;">Design your own Frutiger Aero theme with custom colors and glow effects.</p>
+            
+            <div style="display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap;">
+                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                    <label for="customAeroPrimaryColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Primary Accent Color:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="customAeroPrimaryColor" value="#00ffff" title="Pick aero accent color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
+                        <span id="customAeroPrimaryValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#00ffff</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                    <label for="customAeroDarkColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Dark Background Color:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="customAeroDarkColor" value="#0f1e32" title="Pick aero dark background" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
+                        <span id="customAeroDarkValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#0f1e32</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                    <label for="customAeroGlowColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Glow Color:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="customAeroGlowColor" value="#00ffff" title="Pick glow color for effects" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
+                        <span id="customAeroGlowValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#00ffff</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                    <label for="customAeroTextColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Primary Text Color:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="customAeroTextColor" value="#00ffff" title="Pick primary text color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
+                        <span id="customAeroTextValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#00ffff</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                    <label for="customAeroLightTextColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Light Text Color:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="customAeroLightTextColor" value="#b0e0e6" title="Pick light text color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
+                        <span id="customAeroLightTextValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#b0e0e6</span>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="color: rgba(0, 255, 255, 0.6); font-size: 11px; margin-top: 10px; font-style: italic;">✨ Medium and Light variants are automatically generated with custom glow effects.</p>
+            <button id="resetCustomAeroButton" style="margin-top: 12px; padding: 8px 16px; background: linear-gradient(135deg, rgba(0, 100, 150, 0.4) 0%, rgba(0, 80, 120, 0.3) 100%); color: rgba(var(--glow-color-rgb), 0.9); border: 1px solid rgba(var(--glow-color-rgb), 0.4); border-radius: 3px; cursor: pointer; font-weight: bold; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.2); transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 0 15px rgba(' + document.documentElement.style.getPropertyValue('--glow-color-rgb') + ', 0.4)'" onmouseout="this.style.boxShadow='0 0 8px rgba(' + document.documentElement.style.getPropertyValue('--glow-color-rgb') + ', 0.2)'">Reset to Default Cyan</button>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h3>Default Search Settings</h3>
+        <div class="settings-item">
+            <label for="defaultWeighting">Default Weighting Strategy:</label>
+            <select id="defaultWeighting">
+                <option value="1.5">1.5x (Balanced)</option>
+                <option value="2.0">2x (Aggressive)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h3>About This Tool</h3>
+        <p class="info-text">
+            <strong>Destiny 2 Armor Archetype Helper v1.0</strong>
+        </p>
+        <p class="info-text">
+            This tool helps you identify which armor archetypes to farm based on your desired stat spread.
+        </p>
+        <p class="info-text">
+            <strong>How It Works:</strong>
+        </p>
+        <ul class="info-list">
+            <li>Use the sliders to set your target stats (0-200)</li>
+            <li>Add fragment bonuses to account for your character's fragments</li>
+            <li>Select a weighting strategy (Balanced or Aggressive)</li>
+            <li>Click "Search Combos" to find the best armor archetypes</li>
+            <li>The tool will recommend which archetypes to farm for each armor piece</li>
+        </ul>
+        <p class="info-text">
+            <strong>Weighting Strategies:</strong>
+        </p>
+        <ul class="info-list">
+            <li><strong>Balanced (1.5x):</strong> Gives equal priority to all your target stats</li>
+            <li><strong>Aggressive (2x):</strong> Heavily prioritizes the stats with the highest targets</li>
+        </ul>
+    </div>
+
+    <div class="settings-section">
+        <h3>Data Management</h3>
+        <button id="resetButton" class="settings-button reset-button">Reset All Settings</button>
+    </div>
+</div>
+    
+    <script src="D2ArchetypeHelper.js"></script>
+</body>
+
+</html>
