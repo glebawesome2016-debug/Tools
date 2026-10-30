@@ -1,590 +1,2059 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D2 Armor Archetype Helper</title>
+<meta name="description" content="Find which Destiny 2 armor archetypes to farm for a stat spread, then check pieces off as they drop.">
+<link rel="icon" href="traveler.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<script>
+(function(){var t=null;try{t=JSON.parse(localStorage.getItem('d2ah.v4')||'{}').theme;}catch(e){}
+if(t!=='light'&&t!=='dark'&&t!=='black'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}
+document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<style>
+:root, [data-theme=dark] {
+  --bg: #1b1c1f; --panel: #25262a; --raise: #303236; --line: #3a3c42; --text: #f2f2f0; --muted: #b0b3b9;
+  --good: #66d47d; --bad: #ff6f63; --warn: #ffc857;
+  --s0: #ff6f63; --s1: #ffa04a; --s2: #a3d863; --s3: #58bcf5; --s4: #bd9cff; --s5: #ebe5d1;
+  --accent-text: var(--accent); --panel-edge: transparent;
+  color-scheme: dark;
+}
+[data-theme=black] {
+  --bg: #000; --panel: #0d0d0e; --raise: #1c1c1f; --line: #26262a; --text: #efefef; --muted: #a3a3a8; --panel-edge: #1f1f22;
+  color-scheme: dark;
+}
+[data-theme=light] {
+  --bg: #eef0f2; --panel: #ffffff; --raise: #eceef1; --line: #dfe2e6; --text: #111214; --muted: #50545b;
+  --good: #1b7d33; --bad: #c22d26; --warn: #8a5a00;
+  --s0: #c8352b; --s1: #b85607; --s2: #3f7a10; --s3: #126aa6; --s4: #6a3fc8; --s5: #5c5544;
+  --accent-text: color-mix(in srgb, var(--accent) 58%, #000); --panel-edge: #dcdfe3;
+  color-scheme: light;
+}
+:root { --accent: #ffae00; --accent-ink: #1c1400; --font: 'Atkinson Hyperlegible', Verdana, 'Segoe UI', sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.5; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent-text); }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.ok { color: var(--good); }
+.bad { color: var(--bad); }
+h2 { font-size: 21px; font-weight: 700; margin: 0; line-height: 1.25; }
+h3 { font-size: 17px; font-weight: 700; margin: 0 0 8px; }
+[hidden] { display: none !important; }
 
-    <head>
+.wrap { max-width: 1520px; margin: 0 auto; padding: 0 20px 40px; }
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; padding: 22px 0 14px; }
+.top h1 { font-size: 30px; margin: 0; line-height: 1.15; }
+.top h1::after { content: ''; display: block; width: 48px; height: 4px; background: var(--accent); margin-top: 8px; border-radius: 2px; }
+.top p { margin: 8px 0 0; color: var(--muted); max-width: 78ch; }
+.seg { display: inline-flex; background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px; padding: 3px; gap: 2px; }
+.seg button { background: transparent; border: 0; border-radius: 6px; padding: 6px 12px; font-size: 15px; color: var(--muted); }
+.seg button[aria-pressed=true] { background: var(--raise); color: var(--text); font-weight: 700; }
 
-    <title>D2 Armor 3.0 Help</title>
-    <link rel = "stylesheet" href="D2ArchetypeHelper.css">
-    <link rel = "icon" type = "traveler" href = "traveler.png">
-    <style>
-        :root {
-            --primary-color: rgb(255, 174, 0);
-            --dark-bg: rgb(30, 30, 30);
-            --medium-bg: rgb(50, 50, 50);
-            --light-color: rgb(200, 130, 0);
-            --text-white: rgb(255, 255, 255);
-        }
-    </style>
+/* page tabs */
+.pagetabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); margin-bottom: 18px; }
+.pagetabs button { background: transparent; border: 0; padding: 10px 16px; font-size: 16px; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; font-weight: 700; }
+.pagetabs button[aria-selected=true] { color: var(--text); border-bottom-color: var(--accent); }
+.count { display: inline-block; min-width: 22px; padding: 0 6px; border-radius: 11px; background: var(--raise); font-size: 13px; margin-left: 6px; color: var(--text); }
 
-    </head>
+.panel { background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; }
+.phead { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+.phead .right { margin-left: auto; }
+.badge { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 18px; display: grid; place-items: center; }
+.desc { margin: 0 0 14px; color: var(--muted); max-width: 80ch; }
+.where { font-size: 13px; font-weight: 700; color: var(--accent-text); }
 
+/* how to use */
+.howto h2 { font-size: 24px; margin-bottom: 4px; }
+.stepgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.stepcard { background: var(--raise); border-radius: 8px; padding: 14px; border: 0; text-align: left; display: flex; flex-direction: column; gap: 6px; }
+.stepcard:hover { outline: 2px solid var(--accent); }
+.stepcard .top2 { display: flex; align-items: center; gap: 10px; }
+.stepcard b { font-size: 17px; line-height: 1.25; }
+.stepcard span.t { color: var(--muted); font-size: 15px; }
+details.rules { margin-top: 14px; }
+details.rules summary { cursor: pointer; font-weight: 700; color: var(--accent-text); }
+.rulegrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 28px; margin-top: 10px; }
+.rule { display: grid; grid-template-columns: 130px 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.rule b { font-weight: 700; }
+.rule span { color: var(--muted); }
+
+.btn { background: var(--raise); border: 0; border-radius: 6px; padding: 7px 13px; font-size: 15px; }
+.btn:hover { filter: brightness(1.12); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.small { padding: 4px 10px; font-size: 14px; }
+.btn.link { background: transparent; color: var(--accent-text); padding: 2px 4px; text-decoration: underline; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 0; border-bottom: 1px solid var(--line); padding: 9px 10px; text-align: left; vertical-align: middle; }
+tbody tr:last-child > td { border-bottom: 0; }
+th { color: var(--muted); font-weight: 700; font-size: 14px; white-space: nowrap; }
+.tscroll { overflow-x: auto; }
+td.c, th.c { text-align: center; }
+
+/* stat formatting */
+.st { font-weight: 700; }
+.ab { font-weight: 700; }
+.sep { color: var(--muted); opacity: .6; margin: 0 .15em; }
+.mx { white-space: nowrap; }
+.mx .x { color: var(--muted); margin-left: .25em; }
+.sub { display: block; font-size: 13px; color: var(--muted); }
+
+.warnline { display: flex; gap: 8px; align-items: flex-start; background: color-mix(in srgb, var(--warn) 14%, var(--panel)); border-radius: 6px; padding: 8px 12px; margin: 0 0 12px; font-size: 15px; }
+.warnline svg { flex: none; margin-top: 3px; }
+
+.app { display: grid; grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.app > * { min-width: 0; }
+
+/* step 1 */
+.tgt td { padding: 7px 6px; }
+.tgt td:first-child { padding-left: 0; white-space: nowrap; }
+.tgt input[type=range] { width: 100%; accent-color: var(--accent); }
+input[type=number] { width: 66px; background: var(--raise); border: 0; border-radius: 6px; padding: 6px; text-align: center; }
+input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+select { background: var(--raise); border: 0; border-radius: 6px; padding: 6px 8px; max-width: 100%; }
+.total-line { margin-top: 12px; font-size: 15px; }
+
+/* step 2 */
+.fraglist { display: flex; flex-direction: column; }
+.fraglist label { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.fraglist label:last-child { border-bottom: 0; }
+.fraglist input.neg { color: var(--bad); font-weight: 700; }
+.fraglist input.pos { color: var(--good); font-weight: 700; }
+
+/* step 3 */
+.tierrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 6px; }
+.presets { display: flex; gap: 6px; margin: 14px 0 6px; flex-wrap: wrap; }
+.archt th, .archt td { padding: 8px 6px; }
+.archt td:first-child, .archt th:first-child { padding-left: 0; width: 30px; }
+.archt tbody tr { cursor: pointer; }
+.archt tbody tr:hover td { background: var(--raise); }
+.archt tr.off td { opacity: .42; }
+.archt tr.off td.name b { text-decoration: line-through; }
+.use { display: flex; align-items: center; gap: 6px; }
+.use .bar { flex: none; width: 40px; height: 7px; background: var(--raise); border-radius: 4px; overflow: hidden; }
+.use .bar b { display: block; height: 100%; background: var(--accent); }
+.use span { width: 38px; text-align: right; font-size: 14px; }
+.usepct { font-weight: 700; }
+.usepct.hi { color: var(--accent-text); }
+.usepct.lo { color: var(--muted); font-weight: 400; }
+.ptag { font-size: 12px; font-weight: 700; color: var(--accent-text); margin-left: 4px; }
+
+/* status */
+.status { background: var(--panel); border: 1px solid var(--panel-edge); border-left: 6px solid var(--muted); padding: 16px 20px; margin-bottom: 18px; border-radius: 8px; }
+.status.good { border-left-color: var(--good); }
+.status.badc { border-left-color: var(--bad); }
+.status .big { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.status.good .big { color: var(--good); }
+.status.badc .big { color: var(--bad); }
+.status p { margin: 6px 0 0; color: var(--muted); max-width: 90ch; }
+.busy { color: var(--accent-text); font-size: 14px; }
+
+/* step 4 */
+.mixes tbody tr.main, .mixes tbody tr.alt { cursor: pointer; }
+.mixes tbody tr.main:hover td, .mixes tbody tr.alt:hover td { background: var(--raise); }
+.mixes tr.sel td { background: color-mix(in srgb, var(--accent) 15%, var(--panel)) !important; }
+.mixes tr.sel td:first-child { box-shadow: inset 5px 0 0 var(--accent); }
+.mixes tr.none td { opacity: .5; }
+.mixes tr.alt td { font-size: 15px; }
+.mixes tr.alt td:nth-child(2) { padding-left: 26px; color: var(--muted); }
+.mixes td.res { min-width: 150px; }
+.mixes td.res .sub { max-width: 260px; }
+.mixes td:last-child { width: 1%; }
+.slots td:nth-child(3) { white-space: nowrap; }
+.tag { display: inline-block; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
+.more { white-space: nowrap; }
+
+/* step 5 */
+.progress { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; }
+.progress .bar { flex: 1; height: 12px; background: var(--raise); border-radius: 6px; overflow: hidden; max-width: 420px; }
+.progress .bar b { display: block; height: 100%; background: var(--good); border-radius: 6px; transition: width .3s; }
+.progress .lbl { font-weight: 700; }
+.done-banner { background: color-mix(in srgb, var(--good) 16%, var(--panel)); border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-weight: 700; color: var(--good); }
+.check td { white-space: nowrap; }
+.check td.wrapc { white-space: normal; }
+.check tr.need { cursor: grab; }
+.check tr.need:hover td { background: var(--raise); }
+.check tr.need.picked td { background: color-mix(in srgb, var(--accent) 22%, var(--panel)); }
+.check tr.need.picked td:first-child { box-shadow: inset 5px 0 0 var(--accent); }
+.check tr.got td { color: var(--muted); }
+.check tr.got td .ab, .check tr.got td b { opacity: .85; }
+.box { width: 22px; height: 22px; border-radius: 5px; border: 2px solid var(--muted); display: inline-grid; place-items: center; font-size: 14px; font-weight: 700; }
+.box.on { background: var(--good); border-color: var(--good); color: #062a10; }
+.order { display: inline-block; min-width: 30px; padding: 1px 6px; border-radius: 5px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px; text-align: center; }
+.own { font-size: 13px; color: var(--accent-text); white-space: normal; }
+h3.sect { margin: 22px 0 6px; font-size: 18px; }
+
+.slots td { vertical-align: middle; }
+.slots tr.empty td { color: var(--muted); }
+.slots tr.target td { background: color-mix(in srgb, var(--accent) 9%, var(--panel)); }
+.slots tr.target td:first-child { box-shadow: inset 5px 0 0 var(--accent); }
+.slots tr.dragover td { background: color-mix(in srgb, var(--accent) 25%, var(--panel)); }
+.slots .fields { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; }
+.slots .fields label { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--muted); }
+.slots .fields input[type=number] { width: 58px; }
+.slots .attn select { outline: 2px solid var(--warn); }
+.slotname { font-weight: 700; white-space: nowrap; }
+.acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* totals */
+.totals td.final { font-weight: 700; font-size: 17px; }
+.totals td.bd { white-space: normal; font-size: 14px; min-width: 200px; }
+.totals td.bd .muted { font-size: 13px; }
+
+/* collection */
+.coll td { white-space: nowrap; }
+.empty-note { color: var(--muted); padding: 14px 0; }
+
+footer.foot { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: center; margin-top: 24px; color: var(--muted); font-size: 15px; }
+.swatches { display: flex; gap: 6px; align-items: center; }
+.sw { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; background: var(--sw); }
+.sw[aria-pressed=true] { border-color: var(--text); }
+
+@media (max-width: 1400px) {
+  .app { grid-template-columns: minmax(320px, 400px) minmax(0, 1fr); }
+  .archt th, .archt td { padding: 8px 4px; font-size: 15px; }
+  .stepgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .archt .use .bar { display: none; }
+}
+@media (max-width: 1100px) {
+  .app { grid-template-columns: 1fr; }
+  .rulegrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .stepgrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .wrap { padding: 0 12px 32px; }
+  .top h1 { font-size: 25px; }
+  .panel { padding: 14px; }
+  .status .big { font-size: 20px; }
+  .rule { grid-template-columns: 100px 1fr; }
+  .archt .use .bar { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .progress .bar b { transition: none; } }
+
+/* ===== v5 overrides: full width, compact, borders, step colors ===== */
+:root { --c1: #3b74e0; --c2: #13897c; --c3: #8a52e0; --c4: #d97706; --c5: #2e9a4a; }
+body { font-size: 15px; line-height: 1.45; }
+.wrap { max-width: none; padding: 0 16px 28px; }
+.top { padding: 14px 0 10px; }
+.top h1 { font-size: 26px; }
+.top p { margin-top: 6px; }
+.pagetabs { margin-bottom: 12px; }
+.panel { border: 1px solid var(--line); padding: 12px 14px; margin-bottom: 12px; }
+.panel.step { border-top: 4px solid var(--sc); }
+.panel.step .phead h2 { color: var(--text); }
+.badge { width: 28px; height: 28px; font-size: 16px; background: var(--sc, var(--accent)); color: #fff; }
+.phead { margin-bottom: 4px; }
+h2 { font-size: 19px; }
+.desc { margin: 0 0 10px; font-size: 14px; }
+.status { border: 1px solid var(--line); border-left-width: 6px; padding: 10px 14px; margin-bottom: 12px; }
+.status .big { font-size: 20px; }
+.status p { font-size: 14px; margin-top: 4px; }
+th, td { padding: 6px 8px; }
+th { border-bottom: 2px solid var(--line); background: color-mix(in srgb, var(--raise) 55%, transparent); }
+.mixes td + td, .mixes th + th, .check td + td, .check th + th, .slots td + td, .slots th + th, .totals td + td, .totals th + th, .coll td + td, .coll th + th { border-left: 1px solid var(--line); }
+.mixes, .check, .slots, .totals, .coll { border: 1px solid var(--line); }
+h3.sect { margin: 14px 0 6px; font-size: 16px; }
+.progress { margin: 4px 0 10px; }
+
+/* how to use: compact strip */
+.howto { padding: 10px 14px; }
+.howto h2 { font-size: 19px; }
+.stepgrid { gap: 8px; margin-top: 8px; }
+.stepcard { padding: 10px; gap: 3px; border-top: 4px solid var(--sc); border-radius: 6px; }
+.stepcard b { font-size: 15px; }
+.stepcard span.t { font-size: 14px; }
+.stepcard .where { color: var(--sc); filter: brightness(1.25); }
+[data-theme=light] .stepcard .where { filter: none; }
+details.rules { margin-top: 8px; }
+
+/* three columns on wide screens */
+.app { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(340px, 380px) minmax(380px, 420px) minmax(0, 1fr); grid-template-areas: "a b m"; }
+.colA { grid-area: a; } .colB { grid-area: b; } .colM { grid-area: m; min-width: 0; }
+.app > * { min-width: 0; }
+@media (max-width: 1750px) {
+  .app { grid-template-columns: minmax(360px, 410px) minmax(0, 1fr); grid-template-areas: "a m" "b m"; }
+  .colM { grid-row: 1 / span 2; }
+  .stepgrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (max-width: 1100px) {
+  .app { grid-template-columns: 1fr; grid-template-areas: "a" "b" "m"; }
+  .colM { grid-row: auto; }
+  .stepgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) { .stepgrid { grid-template-columns: 1fr; } }
+.tgt td { padding: 4px 6px; }
+.fraglist label { padding: 4px 0; }
+.archt th, .archt td { padding: 5px 5px; }
+
+/* jump highlight */
+/* blinking outline when you jump to a step */
+@keyframes blink {
+  0%, 49% { outline-color: var(--sc, var(--accent)); box-shadow: 0 0 0 9px color-mix(in srgb, var(--sc, var(--accent)) 30%, transparent); }
+  50%, 100% { outline-color: transparent; box-shadow: 0 0 0 0 transparent; }
+}
+.flash { outline: 4px solid transparent; outline-offset: 3px; animation: blink .55s linear 6; position: relative; z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .flash { animation-duration: 1s; animation-iteration-count: 3; } }
+
+/* centered header */
+.top { flex-direction: column; align-items: center; text-align: center; position: relative; padding-top: 18px; }
+.top p { margin: 6px auto 0; }
+.top h1::after { margin: 8px auto 0; }
+.top > .seg { position: absolute; right: 0; top: 14px; }
+.pagetabs { justify-content: center; }
+.howto .phead { justify-content: center; position: relative; }
+.howto .phead .right { position: absolute; right: 0; margin: 0; }
+.howto .desc { text-align: center; margin-left: auto; margin-right: auto; }
+@media (max-width: 1000px) { .top > .seg { position: static; margin-top: 10px; } }
+
+/* checklist: highlight parts of a roll, then place it */
+.howplace { margin: 0 0 10px; padding-left: 20px; font-size: 14px; color: var(--muted); }
+.howplace li { margin-bottom: 3px; }
+.howplace b { color: var(--text); }
+.check td.mk { cursor: pointer; position: relative; }
+.check td.mk:hover { background: var(--raise); }
+.check td.mk.on { background: color-mix(in srgb, var(--c5) 24%, var(--panel)); box-shadow: inset 0 0 0 2px var(--c5); }
+.check td.mk.on::after { content: '✓'; position: absolute; top: 3px; right: 6px; font-size: 12px; font-weight: 700; color: var(--good); }
+.chip3 { display: inline-block; padding: 1px 6px; border-radius: 4px; cursor: pointer; border: 1px solid var(--line); margin: 1px 2px 1px 0; }
+.chip3.on { background: color-mix(in srgb, var(--c5) 24%, var(--panel)); border-color: var(--c5); }
+.check tr.need { cursor: default; }
+.check tr.need.picked td { background: color-mix(in srgb, var(--accent) 16%, var(--panel)); }
+.boxbtn { background: transparent; border: 0; padding: 0; }
+.boxbtn:hover .box { border-color: var(--good); }
+.slotpick { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.slotpick .lbl { font-size: 13px; font-weight: 700; color: var(--text); width: 100%; }
+.marks-note { font-size: 12px; color: var(--good); display: block; }
+
+/* ===== v6: full-contrast text, steppers, drag ===== */
+:root, [data-theme=dark] { --muted: #d9dbdf; }
+[data-theme=black] { --muted: #d8d8da; }
+[data-theme=light] { --muted: #2a2d32; }
+.check tr.got td { color: var(--text); }
+.slots tr.empty td { color: var(--text); }
+.sub { color: var(--muted); }
+.check, .slots { user-select: none; -webkit-user-select: none; }
+.check select, .slots select, .slots input { user-select: auto; }
+#dragGhost { position: fixed; top: -100px; left: -400px; padding: 6px 12px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px; white-space: nowrap; pointer-events: none; }
+.fragrow { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.fragrow:last-child { border-bottom: 0; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; }
+.stepper input { width: 58px; }
+.stepper input.neg { color: var(--bad); font-weight: 700; }
+.stepper input.pos { color: var(--good); font-weight: 700; }
+.sbtn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--line); background: var(--raise); font-size: 18px; font-weight: 700; line-height: 1; display: grid; place-items: center; }
+.sbtn:hover { border-color: var(--sc, var(--accent)); }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ===== v7: hover cues and finished pieces ===== */
+.check td.mk, .chip3, .boxbtn, .mixes tr.main, .mixes tr.alt, .archt tbody tr, .stepcard, .sbtn, .btn { cursor: pointer; }
+.check td.mk:hover, .chip3:hover { background: color-mix(in srgb, var(--accent) 14%, var(--panel)); outline: 2px dashed var(--accent); outline-offset: -3px; }
+.check td.mk.on:hover { outline-color: var(--c5); }
+.boxbtn:hover .box { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.mixes tr.main:hover td, .mixes tr.alt:hover td, .archt tbody tr:hover td { background: color-mix(in srgb, var(--accent) 10%, var(--panel)); }
+.mixes tr.main:hover td:first-child, .mixes tr.alt:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+.btn:hover, .sbtn:hover { outline: 2px solid var(--accent); outline-offset: 1px; filter: none; }
+/* finished pieces */
+.check tr.got td { background: color-mix(in srgb, var(--c5) 16%, var(--panel)); }
+.check tr.got td:first-child { box-shadow: inset 5px 0 0 var(--c5); }
+.slots tr.filled td { background: color-mix(in srgb, var(--c5) 12%, var(--panel)); }
+.slots tr.filled td:first-child { box-shadow: inset 5px 0 0 var(--c5); }
+.slots tr.filled .slotname::after { content: ' ✓'; color: var(--good); }
+
+.slots td:last-child { width: 1%; white-space: nowrap; }
+.slots .fields { gap: 6px 10px; }
+.slots .fields select { max-width: 190px; }
+.slots td:nth-child(5) select { max-width: 150px; }
+
+.ptag { display: block; margin-left: 0; line-height: 1.1; }
+
+.fillnote { width: 100%; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+
+/* ===== v8: Your armor columns ===== */
+.slots select { font-size: 14px; padding: 5px 6px; max-width: 210px; }
+.slots td { white-space: nowrap; }
+.slots td.attn select { outline: 2px solid var(--warn); }
+.slots .vals { display: flex; gap: 6px; margin-top: 4px; }
+.slots .vals label, .slots .cstats label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); align-items: center; }
+.slots .vals input, .slots .cstats input { width: 48px; padding: 4px; }
+.slots .cstats { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* action words: what to click / do */
+mark.act { background: color-mix(in srgb, var(--sc, var(--accent)) 26%, transparent); color: var(--text); font-weight: 700; padding: 0 4px; border-radius: 4px; box-shadow: inset 0 -2px 0 var(--sc, var(--accent)); white-space: nowrap; }
+.howto .desc mark.act { --sc: var(--accent); }
+#pageCollection mark.act { --sc: var(--accent); }
+
+/* ===== v9: rules button, tier box, next-step banner ===== */
+details.rules summary { list-style: none; text-align: center; margin-top: 4px; }
+details.rules summary::-webkit-details-marker { display: none; }
+.rulesbtn { display: inline-block; padding: 7px 16px; border-radius: 8px; border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel)); color: var(--text); font-size: 16px; font-weight: 700; }
+.rulesbtn:hover { background: color-mix(in srgb, var(--accent) 28%, var(--panel)); }
+.rulesbtn .muted { font-size: 13px; font-weight: 400; }
+details.rules[open] .rulesbtn .muted { display: none; }
+.tierbox { border: 2px solid var(--c3); border-radius: 8px; padding: 10px 12px; margin: 4px 0 10px; background: color-mix(in srgb, var(--c3) 9%, var(--panel)); }
+.tierlbl { font-weight: 700; font-size: 16px; }
+.tierbox .seg { background: var(--panel); }
+.tierbox .seg button[aria-pressed=true] { background: var(--c3); color: #fff; }
+.nextstep { display: flex; align-items: center; gap: 14px; padding: 12px 14px; margin: -2px 0 12px; border-radius: 8px; border: 2px solid var(--sc); background: color-mix(in srgb, var(--sc) 16%, var(--panel)); }
+.nextstep .badge { width: 40px; height: 40px; font-size: 21px; flex: none; }
+.ns-text { flex: 1; min-width: 0; }
+.ns-kicker { font-size: 13px; font-weight: 700; text-transform: none; color: var(--sc); filter: brightness(1.3); }
+[data-theme=light] .ns-kicker { filter: brightness(.8); }
+.ns-title { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.ns-desc { font-size: 15px; margin-top: 2px; }
+.ns-go { background: var(--sc); color: #fff; font-weight: 700; padding: 9px 16px; white-space: nowrap; }
+@media (max-width: 600px) { .nextstep { flex-wrap: wrap; } .ns-go { width: 100%; } }
+
+/* ===== v10: confirm buttons ===== */
+.confirm { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 14px; }
+.cf-btn { background: var(--sc); color: #fff; font-weight: 700; padding: 9px 16px; font-size: 15px; }
+.cf-btn:disabled { opacity: .45; cursor: not-allowed; outline: none !important; }
+.cf-done { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%; }
+.cf-done > span:first-child { color: var(--good); font-weight: 700; font-size: 15px; }
+.cf-done .btn { margin-left: auto; }
+.panel.step.confirmed .badge, .stepcard.confirmed .badge { background: var(--good); font-size: 0; }
+.panel.step.confirmed .badge::after, .stepcard.confirmed .badge::after { content: '✓'; font-size: 17px; color: #fff; }
+.stepcard.confirmed b::after { content: ' (done)'; color: var(--good); font-weight: 700; }
+
+#nextBar .nextstep { margin: 0 0 12px; padding: 14px 20px; border-width: 3px; }
+#nextBar .ns-title { font-size: 24px; }
+#nextBar .nextstep .badge { width: 46px; height: 46px; font-size: 24px; }
+
+/* ===== v11 layout: steps 1-3 in a row; step 4 + totals left, step 5 right ===== */
+.app { display: none; }
+.row1 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) minmax(0, 1.15fr); gap: 16px; align-items: start; margin-bottom: 16px; }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.row1 > *, .row2 > * { min-width: 0; }
+.panel { margin-bottom: 16px; }
+.row1 > .panel { margin-bottom: 0; }
+.row1 > .panel .confirm::before { content: ''; }
+#nextBar .nextstep { margin: 0 0 16px; }
+.howto { margin-bottom: 16px; }
+@media (max-width: 1350px) {
+  .row1 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .row2 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 800px) { .row1 { grid-template-columns: minmax(0, 1fr); } }
+/* step 4 selector */
+.radio { display: inline-block; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted); vertical-align: middle; position: relative; }
+.radio.on { border-color: var(--c4); }
+.radio.on::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--c4); }
+.mixes tr.main:hover .radio, .mixes tr.alt:hover .radio { border-color: var(--c4); }
+.mixes th:first-child, .mixes td:first-child { width: 44px; }
+.cf-sel { width: 100%; font-size: 14px; }
+/* step 5 lock */
+.lockmsg { padding: 18px; border: 2px dashed var(--line); border-radius: 8px; text-align: center; font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+/* compact Your armor */
+.slots .slotname .order { display: inline-block; margin-left: 6px; }
+.slots label.fl { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.slots label.fl select { max-width: 170px; }
+.slots label.fl .sub { display: none; }
+.slots td { white-space: normal; }
+.totals td.bd { min-width: 150px; }
+.totals th, .totals td { padding: 6px 6px; }
+@media (max-width: 1800px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+
+/* step banner sits in the space under Steps 1 and 2, next to the taller Step 3 */
+.row1 { grid-template-areas: "s1 s2 s3" "nb nb s3"; grid-template-rows: auto 1fr; row-gap: 16px; }
+#step1 { grid-area: s1; } #step2 { grid-area: s2; } #step3 { grid-area: s3; } #nextBar { grid-area: nb; }
+#step3 { align-self: start; }
+#nextBar:empty { display: none; }
+#nextBar .nextstep { margin: 0; }
+@media (max-width: 1350px) { .row1 { grid-template-areas: "s1 s2" "nb nb" "s3 s3"; grid-template-rows: auto; } }
+@media (max-width: 800px) { .row1 { grid-template-areas: "s1" "s2" "nb" "s3"; grid-template-rows: auto; } }
+
+/* ===== v12: two ways to place, Your drop builder ===== */
+.paths { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 2px 0 12px; }
+.path { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raise); font-size: 14px; }
+.pnum { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--c5); color: #fff; font-weight: 700; display: grid; place-items: center; }
+@media (max-width: 900px) { .paths { grid-template-columns: 1fr; } }
+.rowno { display: inline-block; min-width: 14px; font-size: 12px; color: var(--muted); margin-right: 6px; vertical-align: middle; }
+.check tr.bhead td { background: color-mix(in srgb, var(--c5) 10%, var(--panel)); border-top: 2px solid var(--c5); font-size: 14px; }
+.check tr.bhead .btn { margin-left: 8px; }
+.check tr.builder td { background: color-mix(in srgb, var(--c5) 5%, var(--panel)); vertical-align: top; }
+.check tr.builder select { max-width: 190px; font-size: 14px; padding: 5px 6px; }
+.check tr.builder td.filled select { outline: 2px solid var(--c5); background: color-mix(in srgb, var(--c5) 20%, var(--panel)); font-weight: 700; }
+.check tr.builder .fl { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.check tr.builder.ready td:first-child { box-shadow: inset 5px 0 0 var(--c5); }
+.plus { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; border: 2px dashed var(--c5); color: var(--c5); font-weight: 700; }
+.check { user-select: none; }
+
+.dnote { margin-top: 4px; color: var(--warn); font-weight: 700; font-size: 13px; }
+
+/* armor sets */
+.setbonus { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raise); font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+.sbrow { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.sbname { font-weight: 700; min-width: 150px; }
+.sb { color: var(--muted); }
+.sb.on { color: var(--good); font-weight: 700; }
+.sbsrc { font-size: 12px; }
+.slots label.fl select[data-f=set], .check tr.builder select[data-d=set] { max-width: 170px; }
+
+/* keep the checklist inside its panel */
+.check tr.builder select { max-width: 150px; }
+.check tr.builder td:nth-child(2) select { width: 150px; }
+.check tr.builder .fl { flex-wrap: wrap; }
+.check td.wrapc { min-width: 120px; }
+.check .slotpick .btn { padding: 3px 8px; font-size: 13px; }
+.check td { padding: 6px 6px; }
+
+/* stat tracker */
+.tracker td { padding: 5px 8px; }
+.tbar { position: relative; height: 14px; background: var(--raise); border-radius: 4px; overflow: visible; }
+.tbar .seg-so { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px 0 0 4px; }
+.tbar .seg-rest { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 55%, transparent) 0 4px, transparent 4px 8px); border: 1px solid color-mix(in srgb, var(--c) 70%, transparent); border-left: 0; }
+.tbar .tick { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1px; background: var(--text); border-radius: 2px; }
+.tracker td.chg { background: color-mix(in srgb, var(--warn) 22%, var(--panel)); }
+.previewnote { min-height: 62px; margin: 8px 0 4px; padding: 8px 12px; border-left: 4px solid var(--c5); background: color-mix(in srgb, var(--c5) 12%, var(--panel)); border-radius: 6px; font-size: 14px; }
+.readrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 10px; font-size: 13.5px; }
+.readrow > div { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--raise); }
+@media (max-width: 900px) { .readrow { grid-template-columns: 1fr; } }
+.chip3:focus-visible { outline: 3px solid var(--accent); }
+
+/* start guide */
+.guidetab { color: var(--accent-text) !important; }
+.guidetab::before { content: '★ '; }
+.newhere { text-align: center; margin: 2px auto 10px; padding: 10px 14px; max-width: 900px; border: 2px solid var(--accent); border-radius: 8px; background: color-mix(in srgb, var(--accent) 14%, var(--panel)); font-size: 15px; font-weight: 700; }
+.newhere .btn { margin: 0 6px; }
+.guide .gquick { padding: 12px 14px; border-left: 5px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); border-radius: 6px; margin-bottom: 14px; font-size: 16px; }
+.ggrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.gcard { border: 1px solid var(--line); border-top: 4px solid var(--sc); border-radius: 8px; padding: 12px 14px; background: var(--raise); }
+.gcard.big { grid-column: span 2; }
+@media (max-width: 700px) { .gcard.big { grid-column: auto; } }
+.gcard h3 { font-size: 18px; margin: 0 0 6px; }
+.gcard p { margin: 0 0 8px; font-size: 15px; }
+.gcard ul { margin: 0 0 8px; padding-left: 20px; font-size: 15px; }
+.example { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: var(--raise); max-width: 900px; }
+.extable { margin-top: 8px; border: 1px solid var(--line); }
+.extable td + td, .extable th + th { border-left: 1px solid var(--line); }
+.previewnote.idle { color: var(--muted); border-left-color: var(--line); background: var(--raise); }
+</style>
+</head>
 <body>
+<div class="wrap">
 
-    <ul id="navMenu">
-        <li><a href="#" id="navArmorPicker" class="nav-link active">Armor Picker</a></li>
-        <li><a href="#" id="navSettings" class="nav-link">Settings</a></li>
-    </ul>
-
-    <h1 style = "text-align: center;">Destiny 2 Armor Archetype Helper</h1>
-<!-- Main Content Wrapper -->
-<div id="armorPickerContainer" class="page-container active">
-    <p style = "text-align: center;">
-        This little website is made to help players 
-        who want to know the exact armor archetypes 
-        they should farm to achieve a certain stat spread.
-        Another helpful armor picker for Destiny 2 >>
-        <a href="https://d2armorpicker.com/">D2ArmorPicker Website</a>
-    </p>
-
-<hr>
-
-<!--Table for Archetypes-->
-<table style = "width:20%;float:right">
-    <tr>
-        <th colspan ="3">All Armor Archetypes</th>
-    </tr>
-    <tr>
-        <th>Archetypes</th>
-        <th>Primary Stat</th>
-        <th>Secondary Stat</th>
-    </tr>
-    <tr>
-        <td>Siegebreaker</td>
-        <td>Health</td>
-        <td>Grenade</td>
-    </tr>
-    <tr>
-        <td>Bulwark</td>
-        <td>Health</td>
-        <td>Class</td>
-    </tr>
-    <tr>
-        <td>Brawler</td>
-        <td>Melee</td>
-        <td>Health</td>
-    </tr>
-    <tr>
-        <td>Skirmisher</td>
-        <td>Melee</td>
-        <td>Weapons</td>
-    </tr>
-    <tr>
-        <td>Grenadier</td>
-        <td>Grenade</td>
-        <td>Super</td>
-    </tr>
-    <tr>
-        <td>Demolitionist</td>
-        <td>Grenade</td>
-        <td>Class</td>
-    </tr>
-    <tr>
-        <td>Colossus</td>
-        <td>Super</td>
-        <td>Health</td>
-    </tr>
-    <tr>
-        <td>Paragon</td>
-        <td>Super</td>
-        <td>Melee</td>
-    </tr>
-    <tr>
-        <td>Reaver</td>
-        <td>Class</td>
-        <td>Melee</td>
-    </tr>
-    <tr>
-        <td>Specialist</td>
-        <td>Class</td>
-        <td>Weapons</td>
-    </tr>
-    <tr>
-        <td>Gunner</td>
-        <td>Weapons</td>
-        <td>Grenade</td>
-    </tr>
-    <tr>
-        <td>Powerhouse</td>
-        <td>Weapons</td>
-        <td>Super</td>
-    </tr>
-
-</table>
-
-<p>All armor calculations assume armor is TIER 5</p>
-
-<p>Primary Stat: 30 Points in Stat</p>
-<p>Secondary Stat: 25 Points in Stat</p>
-<p>Tertiary Stat: 20 Points in Stat | Randomized from the 4 remaining stat pools</p>
-<p>Armor can recieve up to 15 points in total from upgrades, that are placed into the remaining 3 lowest stat pools, 5 in each</p>
-<p>Tuning Slot: Armor can drop with a randomized tuning slot that you can activate. Allows for 5 points into rolled stat, and -5 points into selected.</p>
-<pre>               or</pre>
-<p>Tuning Slot: Can be used for 3 more points, 1 in each of the 3 lowest stat pools</p>
-
-<p>This tool will provide help in identifying what archetype you should grind for to achieve your perfect stat spread, from top to bottom order, starting from helmet.</p>
-<br>
-<ol>
-    IMPORTANT: The "All Armor Archetypes" table to the right of your screen. <b>Click on an archetype to disable it from the algorithm.</b> <br>
-    
-</ol>
-<br>
-<br>
-
-<br>
-<br>
-<br>
-<hr>
-
-<!-- Sliders and Results Wrapper -->
-<div id="sliderWrapper">
-    <!-- Left Column: Sliders and Controls -->
-    <div id="leftColumn">
-        <!-- Stat Sliders -->
-        <div id="sliderContainer">
-            <div class="slider-item">
-                <label for="slider-health">Health: <span id="sliderValue-health">100</span></label>
-                <br>
-                <input type="range" id="slider-health" min="0" max="200" step="5" value="100">
-            </div>
-            <div class="slider-item">
-                <label for="slider-melee">Melee: <span id="sliderValue-melee">100</span></label>
-                <br>
-                <input type="range" id="slider-melee" min="0" max="200" step="5" value="100">
-            </div>
-            <div class="slider-item">
-                <label for="slider-grenade">Grenade: <span id="sliderValue-grenade">100</span></label>
-                <br>
-                <input type="range" id="slider-grenade" min="0" max="200" step="5" value="100">
-            </div>
-            <div class="slider-item">
-                <label for="slider-super">Super: <span id="sliderValue-super">100</span></label>
-                <br>
-                <input type="range" id="slider-super" min="0" max="200" step="5" value="100">
-            </div>
-            <div class="slider-item">
-                <label for="slider-class">Class: <span id="sliderValue-class">100</span></label>
-                <br>
-                <input type="range" id="slider-class" min="0" max="200" step="5" value="100">
-            </div>
-            <div class="slider-item">
-                <label for="slider-weapons">Weapons: <span id="sliderValue-weapons">100</span></label>
-                <br>
-                <input type="range" id="slider-weapons" min="0" max="200" step="5" value="100">
-            </div>
-        </div>
-
-        <!-- Weighting Strategy Selection -->
-        <div id="weightingContainer">
-            <h3>Weighting Strategy</h3>
-            <button id="weighting-aggressive" class="weighting-btn">2x (Aggressive)</button>
-            <button id="weighting-balanced" class="weighting-btn active">1.5x (Balanced)</button> 
-            <p id="weightingStatus">Current: 1.5x (Balanced)</p>
-            <button id="searchButton">Search Combos</button>
-        </div>
+  <header class="top">
+    <div>
+      <h1>Destiny 2 Armor Archetype Helper</h1>
+      <p>Work out which armor archetypes to farm for the stats you want, then check each piece off as it drops. Another helpful armor tool: <a href="https://d2armorpicker.com/" target="_blank" rel="noopener">D2ArmorPicker</a></p>
     </div>
-
-    <!-- Right Column: Fragment Bonuses -->
-    <div id="fragmentContainer">
-        <h3>Fragment Bonuses</h3>
-        <div class="compact-fragment-item">
-            <label for="fragment-health">Health: <span id="fragmentValue-health">0</span></label>
-            <input type="number" id="fragment-health" min="-50" max="50" value="0">
-        </div>
-        <div class="compact-fragment-item">
-            <label for="fragment-melee">Melee: <span id="fragmentValue-melee">0</span></label>
-            <input type="number" id="fragment-melee" min="-50" max="50" value="0">
-        </div>
-        <div class="compact-fragment-item">
-            <label for="fragment-grenade">Grenade: <span id="fragmentValue-grenade">0</span></label>
-            <input type="number" id="fragment-grenade" min="-50" max="50" value="0">
-        </div>
-        <div class="compact-fragment-item">
-            <label for="fragment-super">Super: <span id="fragmentValue-super">0</span></label>
-            <input type="number" id="fragment-super" min="-50" max="50" value="0">
-        </div>
-        <div class="compact-fragment-item">
-            <label for="fragment-class">Class: <span id="fragmentValue-class">0</span></label>
-            <input type="number" id="fragment-class" min="-50" max="50" value="0">
-        </div>
-        <div class="compact-fragment-item">
-            <label for="fragment-weapons">Weapons: <span id="fragmentValue-weapons">0</span></label>
-            <input type="number" id="fragment-weapons" min="-50" max="50" value="0">
-        </div>
+    <div class="seg" role="group" aria-label="Color mode">
+      <button data-mode="light">Light</button><button data-mode="dark">Dark</button><button data-mode="black">Super dark</button>
     </div>
-</div>
+  </header>
 
-    <!-- Results Display -->
-    <div id="resultsContainer">
-        <h2>Results</h2>
-        <p>Total: <span id="totalPoints">0</span></p>
-        <p>Health: <span id="result-health">0</span></p>
-        <p>Melee: <span id="result-melee">0</span></p>
-        <p>Grenade: <span id="result-grenade">0</span></p>
-        <p>Super: <span id="result-super">0</span></p>
-        <p>Class: <span id="result-class">0</span></p>
-        <p>Weapons: <span id="result-weapons">0</span></p>
-    </div>
+  <nav class="pagetabs" role="tablist">
+    <button role="tab" data-page="guide" aria-selected="false" class="guidetab">Start guide</button>
+    <button role="tab" data-page="planner" aria-selected="true">Planner</button>
+    <button role="tab" data-page="collection" aria-selected="false">My armor<span class="count" id="collCount">0</span></button>
+  </nav>
 
-    <!-- Armor Pieces Container with Summary Results -->
-    <div id="armorWrapper">
-        <div id="armorContainer">
-            <h2>Armor Pieces</h2>
-            <div id="armorGrid">
-                <div class="armor-row armor-header">
-                    <div class="armor-item">Armor</div>
-                    <div class="archetype-item">Archetype</div>
-                    <div class="stat-details">1st + 2nd Stat</div>
-                    <div class="tertiary-stat">3rd Stat</div>
-                    <div class="upgrade-stats">Bonus Stat</div>
-                    <div class="mod-recommendation">+10 Mod</div>
-                    <div class="tuning-slot">+5/-5 Tuning</div>
-                </div>
-                <div class="armor-row">
-                    <div class="armor-item">Helmet</div>
-                    <div class="archetype-item" id="archetype-helmet"></div>
-                    <div class="stat-details" id="stats-helmet"></div>
-                    <div class="tertiary-stat" id="tertiary-helmet"></div>
-                    <div class="upgrade-stats" id="upgrade-helmet"></div>
-                    <div class="mod-recommendation" id="mod-helmet"></div>
-                    <div class="tuning-slot" id="tuning-helmet"></div>
-                </div>
-                <div class="armor-row">
-                    <div class="armor-item">Gauntlets</div>
-                    <div class="archetype-item" id="archetype-gauntlets"></div>
-                    <div class="stat-details" id="stats-gauntlets"></div>
-                    <div class="tertiary-stat" id="tertiary-gauntlets"></div>
-                    <div class="upgrade-stats" id="upgrade-gauntlets"></div>
-                    <div class="mod-recommendation" id="mod-gauntlets"></div>
-                    <div class="tuning-slot" id="tuning-gauntlets"></div>
-                </div>
-                <div class="armor-row">
-                    <div class="armor-item">Chest Armor</div>
-                    <div class="archetype-item" id="archetype-chest"></div>
-                    <div class="stat-details" id="stats-chest"></div>
-                    <div class="tertiary-stat" id="tertiary-chest"></div>
-                    <div class="upgrade-stats" id="upgrade-chest"></div>
-                    <div class="mod-recommendation" id="mod-chest"></div>
-                    <div class="tuning-slot" id="tuning-chest"></div>
-                </div>
-                <div class="armor-row">
-                    <div class="armor-item">Leg Armor</div>
-                    <div class="archetype-item" id="archetype-legs"></div>
-                    <div class="stat-details" id="stats-legs"></div>
-                    <div class="tertiary-stat" id="tertiary-legs"></div>
-                    <div class="upgrade-stats" id="upgrade-legs"></div>
-                    <div class="mod-recommendation" id="mod-legs"></div>
-                    <div class="tuning-slot" id="tuning-legs"></div>
-                </div>
-                <div class="armor-row">
-                    <div class="armor-item">Class Item</div>
-                    <div class="archetype-item" id="archetype-class"></div>
-                    <div class="stat-details" id="stats-class"></div>
-                    <div class="tertiary-stat" id="tertiary-class"></div>
-                    <div class="upgrade-stats" id="upgrade-class"></div>
-                    <div class="mod-recommendation" id="mod-class"></div>
-                    <div class="tuning-slot" id="tuning-class"></div>
-                </div>
+  <!-- ===================== PLANNER ===================== -->
+  <div id="pagePlanner">
+
+    <section class="panel howto" id="howto">
+      <div class="phead">
+        <h2>How to use this</h2>
+        <button class="btn small right" id="howtoToggle">Hide</button>
+      </div>
+      <div id="howtoBody">
+        <p class="newhere">New here or confused by a word? <button class="btn small primary" data-page-go="guide">Open the Start guide</button> It explains archetypes, 3rd stats, tuning and everything else in plain words.</p>
+        <p class="desc">The page works in 5 steps. Each step is its own numbered, color-coded section. <mark class="act">Click a step</mark> to jump to it.</p>
+        <div class="stepgrid">
+          <button class="stepcard" data-go="step1" style="--sc:var(--c1)"><span class="top2"><span class="badge">1</span><b>Set your target stats</b></span><span class="where">Top row, left</span><span class="t"><mark class="act">Drag each slider</mark> to the stat total you want.</span></button>
+          <button class="stepcard" data-go="step2" style="--sc:var(--c2)"><span class="top2"><span class="badge">2</span><b>Add fragment bonuses</b></span><span class="where">Top row, middle (optional)</span><span class="t"><mark class="act">Press − or +</mark> for any stats your subclass fragments give.</span></button>
+          <button class="stepcard" data-go="step3" style="--sc:var(--c3)"><span class="top2"><span class="badge">3</span><b>Choose archetypes and tier</b></span><span class="where">Top row, right</span><span class="t"><mark class="act">Untick</mark> archetypes you can't farm. <mark class="act">Pick the tier</mark> you can get.</span></button>
+          <button class="stepcard" data-go="step4" style="--sc:var(--c4)"><span class="top2"><span class="badge">4</span><b>Pick a build</b></span><span class="where">Second row, left</span><span class="t">Compare the set mixes, <mark class="act">click the row</mark> you want and <mark class="act">press Confirm</mark>.</span></button>
+          <button class="stepcard" data-go="step5" style="--sc:var(--c5)"><span class="top2"><span class="badge">5</span><b>Farm and check pieces off</b></span><span class="where">Second row, right</span><span class="t">Exact match: <mark class="act">tick its box</mark> and <mark class="act">pick the slot</mark>. Mixed: <mark class="act">click the matching parts</mark> to build it in the Your drop row.</span></button>
+        </div>
+        <details class="rules" id="rules">
+          <summary><span class="rulesbtn">ⓘ How armor stats work <span class="muted">(click to open)</span></span></summary>
+          <div class="rulegrid">
+            <div class="rule"><b>Primary stat</b><span>30 points, set by the archetype.</span></div>
+            <div class="rule"><b>Secondary stat</b><span>25 points, set by the archetype.</span></div>
+            <div class="rule"><b>3rd stat</b><span>20 points, random from the 4 stats the archetype doesn't cover.</span></div>
+            <div class="rule"><b>Masterwork</b><span>+5 to each of the 3 stats left over (15 total), at every tier.</span></div>
+            <div class="rule"><b>Stat mod</b><span>+10 to any one stat. One per piece.</span></div>
+            <div class="rule"><b>Tuning (Tier 5 only)</b><span>Each piece has a random tuned stat: take +5 in it and −5 in a stat you pick, or use Balanced for +1 on the piece's 3 lowest stats.</span></div>
+            <div class="rule"><b>Tiers 1 to 4</b><span>Lower, random stats and no tuning. Typical rolls: T1 about 30 / 17 / 10, T2 about 30 / 20 / 12, T3 29–30 / 21–23 / 14–16, T4 30 / 24–25 / 16–18. The planner uses the middle of each range, so treat results as estimates.</span></div>
+            <div class="rule"><b>Stat range</b><span>Every stat goes from 0 to 200.</span></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <div class="row1">
+      <section class="panel step" id="step1" style="--sc:var(--c1)">
+          <div class="phead"><span class="badge">1</span><h2>Target stats</h2><button class="btn small right" id="resetTargets" title="Set every target back to 0">Reset stats</button></div>
+          <p class="desc"><mark class="act">Drag a slider or type a number</mark> for each stat total you want. <mark class="act">Tick Priority</mark> on any stat that must not fall short when everything can't fit.</p>
+          <div class="lockwarn"></div>
+          <table class="tgt">
+            <thead><tr><th>Stat</th><th></th><th class="c">Target</th><th class="c">Priority</th></tr></thead>
+            <tbody id="targets"></tbody>
+          </table>
+          <div class="total-line" id="budget"></div>
+          <div class="confirm" data-confirm="1"></div>
+        </section>
+      <section class="panel step" id="step2" style="--sc:var(--c2)">
+          <div class="phead"><span class="badge">2</span><h2>Fragment bonuses</h2><span class="muted">(optional)</span><button class="btn small right" id="resetFrags" title="Set every fragment bonus back to 0">Reset fragments</button></div>
+          <p class="desc">Stat bonuses or penalties from your subclass fragments, like +10 Class or −10 Health. <mark class="act">Press − or +</mark> to change them (10 at a time). Leave them at 0 if you don't use any.</p>
+          <div class="fraglist" id="frags"></div>
+          <div class="confirm" data-confirm="2"></div>
+        </section>
+      <section class="panel step" id="step3" style="--sc:var(--c3)">
+          <div class="phead"><span class="badge">3</span><h2>Archetypes and tier</h2></div>
+          <p class="desc"><mark class="act">Click an archetype</mark> you can't farm right now to turn it off, and <mark class="act">pick the tier</mark> you're farming. The <b>Useful</b> column shows how often each archetype appears in the best builds for your stats, so higher means farm it first.</p>
+          <div class="lockwarn"></div>
+          <div class="tierbox">
+            <div class="tierrow">
+              <span class="tierlbl">Armor tier you're farming</span>
+              <div class="seg" role="group" aria-label="Armor tier" id="tierSeg"></div>
             </div>
-        </div>
-        
-        <!-- Summary Results Container -->
-        <div id="summaryResultsContainer">
-            <h2>Total Stats</h2>
-            <table id="summaryTable">
-                <tr>
-                    <th>Stat</th>
-                    <th>Fragments</th>
-                    <th>Before Bonus</th>
-                    <th>Bonus Stats</th>
-                    <th>After Bonus</th>
-                    <th>Final</th>
-                </tr>
-                <tr>
-                    <td>Health (HP)</td>
-                    <td id="summary-health-frag">0</td>
-                    <td id="summary-health-before">0</td>
-                    <td id="summary-health-bonus">0</td>
-                    <td id="summary-health-after">0</td>
-                    <td id="summary-health-final">0</td>
-                </tr>
-                <tr>
-                    <td>Melee (ML)</td>
-                    <td id="summary-melee-frag">0</td>
-                    <td id="summary-melee-before">0</td>
-                    <td id="summary-melee-bonus">0</td>
-                    <td id="summary-melee-after">0</td>
-                    <td id="summary-melee-final">0</td>
-                </tr>
-                <tr>
-                    <td>Grenade (GR)</td>
-                    <td id="summary-grenade-frag">0</td>
-                    <td id="summary-grenade-before">0</td>
-                    <td id="summary-grenade-bonus">0</td>
-                    <td id="summary-grenade-after">0</td>
-                    <td id="summary-grenade-final">0</td>
-                </tr>
-                <tr>
-                    <td>Super (SP)</td>
-                    <td id="summary-super-frag">0</td>
-                    <td id="summary-super-before">0</td>
-                    <td id="summary-super-bonus">0</td>
-                    <td id="summary-super-after">0</td>
-                    <td id="summary-super-final">0</td>
-                </tr>
-                <tr>
-                    <td>Class (CL)</td>
-                    <td id="summary-class-frag">0</td>
-                    <td id="summary-class-before">0</td>
-                    <td id="summary-class-bonus">0</td>
-                    <td id="summary-class-after">0</td>
-                    <td id="summary-class-final">0</td>
-                </tr>
-                <tr>
-                    <td>Weapons (WP)</td>
-                    <td id="summary-weapons-frag">0</td>
-                    <td id="summary-weapons-before">0</td>
-                    <td id="summary-weapons-bonus">0</td>
-                    <td id="summary-weapons-after">0</td>
-                    <td id="summary-weapons-final">0</td>
-                </tr>
+            <div class="muted" style="font-size:14px" id="tierNote"></div>
+          </div>
+          <div class="presets">
+            <button class="btn small" data-preset="all">Use all 12</button>
+            <button class="btn small" data-preset="launch">Launch 6 only</button>
+            <button class="btn small" data-preset="none">Untick all</button>
+          </div>
+          <div class="tscroll">
+            <table class="archt">
+              <thead><tr><th class="c">Use</th><th>Archetype</th><th>Primary</th><th>Secondary</th><th class="c">Useful</th></tr></thead>
+              <tbody id="arch"></tbody>
             </table>
-        </div>
+          </div>
+          <div class="confirm" data-confirm="3"></div>
+        </section>
+      <div id="nextBar" aria-live="polite"></div>
+    </div>
 
-        <!-- Stat Breakdown Container -->
-        <div id="statBreakdownContainer">
-            <h2>Stat Breakdown</h2>
-            <table id="breakdownTable">
-                <tr>
-                    <th>Stat</th>
-                    <th>Breakdown</th>
-                </tr>
-                <tr>
-                    <td>Health (HP)</td>
-                    <td id="breakdown-health">0</td>
-                </tr>
-                <tr>
-                    <td>Melee (ML)</td>
-                    <td id="breakdown-melee">0</td>
-                </tr>
-                <tr>
-                    <td>Grenade (GR)</td>
-                    <td id="breakdown-grenade">0</td>
-                </tr>
-                <tr>
-                    <td>Super (SP)</td>
-                    <td id="breakdown-super">0</td>
-                </tr>
-                <tr>
-                    <td>Class (CL)</td>
-                    <td id="breakdown-class">0</td>
-                </tr>
-                <tr>
-                    <td>Weapons (WP)</td>
-                    <td id="breakdown-weapons">0</td>
-                </tr>
+    <div class="row2">
+      <div class="colL" aria-live="polite">
+        <div class="status" id="status"><div class="big">Working out builds…</div></div>
+        <section class="panel step" id="step4" style="--sc:var(--c4)">
+          <div class="phead"><span class="badge">4</span><h2>Pick a build</h2></div>
+          <p class="desc">A <b>set mix</b> is how many of each archetype you wear, from all 5 the same to all 5 different. Each row is the best build for that mix. <mark class="act">Press “more”</mark> to see other archetypes for the same mix, including ones that fall short. <mark class="act">Click a row</mark> to select it, then <mark class="act">press Confirm this build</mark> to start farming in Step 5.</p>
+          <div class="tscroll">
+            <table class="mixes">
+              <thead><tr><th class="c">Pick</th><th>Set mix</th><th>Archetypes</th><th>Result</th><th>3rd stat rolls</th><th>Tuned stats</th><th></th></tr></thead>
+              <tbody id="mixes"></tbody>
             </table>
-        </div>
+          </div>
+          <div class="confirm" data-confirm="4"></div>
+        </section>
+        <section class="panel" id="totalsPanel">
+          <div class="phead"><h2>Total stats</h2></div>
+          <p class="desc">Where every point comes from once the whole build is done.</p>
+          <div class="tscroll">
+            <table class="totals">
+              <thead><tr><th>Stat</th><th class="c">Target</th><th class="c">Armor</th><th class="c">Mods</th><th class="c">Tuning</th><th class="c">Fragments</th><th class="c">Final</th><th class="c">vs Target</th><th>Breakdown</th></tr></thead>
+              <tbody id="totals"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <div class="colR">
+        <section class="panel step" id="step5" style="--sc:var(--c5)">
+          <div class="phead"><span class="badge">5</span><h2>Farming checklist</h2><span class="right muted" id="buildName"></span></div>
+          <div id="step5lock" class="lockmsg"><b>Locked until you confirm a build.</b> Select a row in Step 4 and press <mark class="act" style="--sc:var(--c4)">Confirm this build</mark>. <button class="btn small" data-gostep2="step4">Go to Step 4</button></div>
+          <div id="step5body">
+          <div class="paths">
+            <div class="path"><span class="pnum">A</span><div><b>Exact match?</b> If your drop matches one of the rows exactly, <mark class="act">tick its box</mark> and <mark class="act">pick the slot</mark> it dropped in. You can also <mark class="act">drag the row</mark> onto a slot below.</div></div>
+            <div class="path"><span class="pnum">B</span><div><b>Close, but mixed?</b> <mark class="act">Click the parts that match</mark> your drop in any of the rows: archetype, 3rd stat, tuned stat, mod. Each one loads into the <b>Your drop</b> row at the bottom. Set anything else with its dropdowns, then <mark class="act">pick the slot</mark>.</div></div>
+          </div>
+          <div class="progress"><span class="lbl num" id="progLbl"></span><div class="bar"><b id="progBar"></b></div></div>
+          <div id="doneBanner" class="done-banner" hidden></div>
+
+          <h3 class="sect">Your stats so far</h3>
+          <p class="desc" style="margin-bottom:6px"><b>So far</b> is what your placed pieces and fragments already give. <b>Still to come</b> is what the pieces you haven't found yet are planned to add. Hover a 3rd stat option below to preview how it changes things.</p>
+          <div class="tscroll"><table class="tracker"><thead><tr><th>Stat</th><th style="width:40%">Progress</th><th class="c">So far</th><th class="c">Still to come</th><th class="c">Final</th><th class="c">Target</th></tr></thead><tbody id="tracker"></tbody></table></div>
+          <div id="previewNote" class="previewnote idle">Hover (or tab to) a 3rd stat option in the rows below to preview how it adds up.</div>
+
+          <h3 class="sect">Rolls you need</h3>
+          <div class="readrow">
+            <div><b>3rd stat</b> is the random 20-point stat on the drop. <b>"A or B, any of these"</b> means a drop with either one works: the planner moves a +10 mod or the tuning on another piece to make the totals add up. Hover each option to see exactly what changes.</div>
+            <div><b>Tuned stat</b>: every Tier 5 piece rolls one random stat that can be tuned (in game it has three small lines next to it). Its tuning slot can take <b>+5 to that stat and −5 to another</b>, or <b>Balanced: +1 to the piece's 3 lowest stats</b>. "SP: +5 Super, −5 Health" means you want a drop whose tuned stat is Super, then put that tuning mod in. "Any" means the tuned stat doesn't matter.</div>
+          </div>
+          <div class="tscroll">
+            <table class="check">
+              <thead><tr><th></th><th>Archetype</th><th>Main stats</th><th>3rd stat (20)</th><th>Tuned stat to farm</th><th>+10 Mod</th><th>Status</th></tr></thead>
+              <tbody id="check"></tbody>
+            </table>
+          </div>
+
+          <h3 class="sect">Your armor</h3>
+          <p class="desc" style="margin-bottom:6px">Pieces land here as you tick them off, numbered #1, #2… in the order you found them. In the Tuning column, <b>Tuned stat</b> is the stat your piece rolled for tuning and <b>Tuning mod</b> is what you actually put in its tuning slot. <mark class="act">Change any dropdown</mark> that's different and the plan updates.</p>
+          <div class="tscroll">
+            <table class="slots">
+              <thead><tr><th>Slot</th><th>Piece, tier and set</th><th>3rd stat</th><th>Tuning</th><th>+10 Mod</th><th></th></tr></thead>
+              <tbody id="slots"></tbody>
+            </table>
+          </div>
+          <div id="setBonus" class="setbonus"></div>
+          </div>
+        </section>
+      </div>
     </div>
+  </div>
+
+  <!-- ===================== START GUIDE ===================== -->
+  <div id="pageGuide" hidden>
+    <section class="panel guide">
+      <div class="phead"><h2>Start guide: the words this page uses</h2></div>
+      <p class="desc">New to armor stats, or not sure what something on the planner means? Everything is explained here in plain words. When you're ready, <button class="btn small primary" data-page-go="planner">Go to the Planner</button></p>
+
+      <div class="gquick">
+        <b>The idea in one sentence:</b> you pick the stats you want, the planner tells you which <b>archetypes</b> to farm (and which random rolls on them), and then you tick pieces off as they drop until all 5 slots are filled.
+      </div>
+
+      <div class="ggrid">
+        <article class="gcard big" style="--sc:var(--c3)">
+          <h3>Archetype</h3>
+          <p>Every legendary armor piece (helmet, gauntlets, chest, legs or class item) has <b>one archetype</b>. It belongs to that single piece, not to your character, your class or the armor set. You'll see the archetype named on the piece when you inspect it in game.</p>
+          <p>The archetype decides the piece's <b>two biggest stats</b>:</p>
+          <ul><li><b>Primary stat</b>: 30 points on Tier 5 armor</li><li><b>Secondary stat</b>: 25 points on Tier 5 armor</li></ul>
+          <p>Example: a <b>Gunner</b> helmet always has 30 Weapons and 25 Grenade. There are 12 archetypes, and the table in Step 3 lists them all.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c3)">
+          <h3>3rd stat</h3>
+          <p>A third, <b>random</b> stat on every piece: 20 points on Tier 5. It's always one of the four stats the archetype <i>doesn't</i> cover, so there's a 1 in 4 chance of each.</p>
+          <p>When the planner says <b>"20 SP or 20 CL, any of these"</b>, a drop with either one works. It moves a mod or tuning elsewhere to make it add up.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c3)">
+          <h3>Masterwork</h3>
+          <p>Fully upgrading a piece adds <b>+5 to each of the 3 stats left over</b> (the ones that aren't primary, secondary or 3rd stat). That's 15 points, on every tier. The planner always assumes full masterwork.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c5)">
+          <h3>Tuned stat and tuning mod</h3>
+          <p>Every <b>Tier 5</b> piece rolls one random <b>tuned stat</b> (it has three small lines next to it in game). It can be any of the 6 stats.</p>
+          <p>The piece's <b>tuning slot</b> takes one of two mods:</p>
+          <ul><li><b>+5 / −5</b>: +5 to the tuned stat, −5 to a stat you choose</li><li><b>Balanced</b>: +1 to the piece's 3 lowest stats</li></ul>
+          <p>"Tuned stat to farm: SP" means look for a drop whose tuned stat is Super. "Any" means it doesn't matter.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c5)">
+          <h3>+10 stat mod</h3>
+          <p>Every piece can hold one <b>+10 stat mod</b> for any stat. The planner places all 5 for you, and you can override one in Your armor if you used something else.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c3)">
+          <h3>Tier</h3>
+          <p>Armor drops at Tier 1 to 5. <b>Tier 5</b> has fixed 30 / 25 / 20 stats plus a tuning slot. <b>Tiers 1 to 4</b> have lower, random stats and no tuning, so results using them are only estimates.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c4)">
+          <h3>Set mix</h3>
+          <p>How many of each archetype you wear across your 5 pieces. <b>"All 5 the same"</b> is five of one archetype. <b>"3 + 2"</b> is three of one and two of another. <b>"All 5 different"</b> is one each of five archetypes. Mixing is often easier to farm if you already own some pieces.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c2)">
+          <h3>Fragment bonuses</h3>
+          <p>Some subclass <b>fragments</b> add or remove stat points (for example +10 Class or −10 Health). Enter yours in Step 2 so the totals match what you'll actually see in game.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--c1)">
+          <h3>Target and Priority</h3>
+          <p>A <b>target</b> is the stat total you want (0 to 200). Tick <b>Priority</b> on a stat that must not fall short; if everything can't fit, the planner lets the other stats fall short first.</p>
+        </article>
+
+        <article class="gcard" style="--sc:var(--accent)">
+          <h3>Armor set</h3>
+          <p>Separate from archetype. A <b>set</b> (like Smoke Jumper) gives a bonus when you wear 2 or 4 pieces of it. Sets don't change stats, so the planner doesn't need them, but you can note each piece's set to track your set bonuses.</p>
+        </article>
+      </div>
+
+      <h3 style="margin-top:18px">How a Tier 5 piece adds up</h3>
+      <div class="example">
+        <div><b>Gunner</b> helmet, 3rd stat Melee, tuned stat Weapons, +10 Weapons mod</div>
+        <table class="extable"><thead><tr><th>Stat</th><th class="c">Archetype</th><th class="c">3rd stat</th><th class="c">Masterwork</th><th class="c">Tuning (+5 WP / −5 HP)</th><th class="c">Mod</th><th class="c">Total</th></tr></thead>
+        <tbody>
+          <tr><td>Weapons</td><td class="c">30</td><td></td><td></td><td class="c">+5</td><td class="c">+10</td><td class="c"><b>45</b></td></tr>
+          <tr><td>Grenade</td><td class="c">25</td><td></td><td></td><td></td><td></td><td class="c"><b>25</b></td></tr>
+          <tr><td>Melee</td><td></td><td class="c">20</td><td></td><td></td><td></td><td class="c"><b>20</b></td></tr>
+          <tr><td>Health</td><td></td><td></td><td class="c">+5</td><td class="c">−5</td><td></td><td class="c"><b>0</b></td></tr>
+          <tr><td>Super</td><td></td><td></td><td class="c">+5</td><td></td><td></td><td class="c"><b>5</b></td></tr>
+          <tr><td>Class</td><td></td><td></td><td class="c">+5</td><td></td><td></td><td class="c"><b>5</b></td></tr>
+        </tbody></table>
+        <p class="muted" style="margin:6px 0 0">Your final stats are all 5 pieces added together, plus fragments. That's what the Total stats table on the Planner shows.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== COLLECTION ===================== -->
+  <div id="pageCollection" hidden>
+    <section class="panel">
+      <div class="phead"><h2>My armor</h2></div>
+      <p class="desc">Every piece you've placed in the checklist is saved here, so a future build can remind you when you already own something it needs. <mark class="act">Press Delete</mark> on anything that's wrong or that you've dismantled. This list stays in your browser.</p>
+      <div class="tscroll">
+        <table class="coll">
+          <thead><tr><th>Slot</th><th>Piece</th><th>Set</th><th>Tier</th><th>Main stats</th><th>3rd stat</th><th>Tuned stat</th><th>In current build</th><th></th></tr></thead>
+          <tbody id="coll"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>Accent color</span>
+    <div class="swatches" id="swatches"></div>
+    <button class="btn small" id="share">Copy share link</button>
+    <button class="btn small" id="reset">Reset planner</button>
+  </footer>
 </div>
 
-<!-- Settings Page -->
-<div id="settingsContainer" class="page-container">
-    <h2>Settings</h2>
-    
-    <div class="settings-section">
-        <h3>Display Settings</h3>
-        <div class="settings-item">
-            <div style="display: flex; gap: 20px; margin-bottom: 15px;">
-                <div style="flex: 1;" id="colorThemeContainer">
-                    <label for="colorTheme">Color Theme:</label>
-                    <select id="colorTheme">
-                        <optgroup label="— Classic Colors —">
-                        <option value="gold">Gold (Default)</option>
-                        <option value="blue">Blue</option>
-                        <option value="red">Red</option>
-                        <option value="green">Green</option>
-                        <option value="purple">Purple</option>
-                        <option value="cyan">Cyan</option>
-                        <option value="orange">Orange</option>
-                        <option value="pink">Pink</option>
-                        <option value="teal">Teal</option>
-                        </optgroup>
-                        <optgroup label="— Destiny Colors —">
-                        <option value="vex">Vex Chrome</option>
-                        <option value="cabal">Cabal Imperium</option>
-                        <option value="hive">Hive Corruption</option>
-                        <option value="taken">Taken Void</option>
-                        <option value="dreaming">Dreaming City</option>
-                        <option value="gambit">Drifter's Gambit</option>
-                        <option value="lightbearer">Lightbearer</option>
-                        </optgroup>
-                        <option value="custom">Custom Theme</option>
-                    </select>
-                </div>
+<div id="dragGhost" aria-hidden="true"></div>
+<script id="engine">
+// D2 Armor Archetype Helper - search engine (no DOM). Works in browser, web worker and Node.
+(function (G) {
+  'use strict';
 
-                <div style="flex: 1; display: none;" id="aeroThemeContainer">
-                    <label for="aeroTheme">Aero Theme:</label>
-                    <select id="aeroTheme">
-                        <optgroup label="— Aero Themes —">
-                        <option value="cyan-aero">Default ✨ (Default Aero)</option>
-                        <option value="magenta-aero">Magenta Aero</option>
-                        <option value="yellow-aero">Yellow Aero</option>
-                        <option value="green-aero">Green Aero</option>
-                        <option value="orange-aero">Orange Aero</option>
-                        <option value="purple-aero">Purple Aero</option>
-                        </optgroup>
-                        <option value="custom-aero">🎨 Custom Aero</option>
-                    </select>
-                </div>
-                
-                <div style="flex: 1;">
-                    <label for="pageStyle">Page Style:</label>
-                    <select id="pageStyle">
-                        <option value="default">Default (Clean)</option>
-                        <option value="vex">Vex (Tech/Geometric)</option>
-                        <option value="cabal">Cabal (Military/Heavy)</option>
-                        <option value="hive">Hive (Organic/Creepy)</option>
-                        <option value="taken">Taken (Distorted/Glitch)</option>
-                        <option value="dreaming">Dreaming (Elegant/Magical)</option>
-                        <option value="gambit">Gambit (Industrial/Rough)</option>
-                        <option value="guardian">Guardian (Clean/Focused)</option>
-                    </select>
-                </div>
-                
-                <div style="flex: 1;">
-                    <label for="aestheticStyle">Aesthetic:</label>
-                    <select id="aestheticStyle">
-                        <option value="none">None</option>
-                        <option value="frutiger-aero">Frutiger Aero ✨</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+  const STATS = ['health', 'melee', 'grenade', 'super', 'class', 'weapons'];
+  const STAT_NAME = ['Health', 'Melee', 'Grenade', 'Super', 'Class', 'Weapons'];
+  const STAT_SHORT = ['HP', 'ML', 'GR', 'SP', 'CL', 'WP'];
+  const SLOTS = ['Helmet', 'Gauntlets', 'Chest Armor', 'Leg Armor', 'Class Item'];
 
-        <!-- Custom Color Picker Section (Hidden by default) -->
-        <div id="customColorSection" style="display: none; margin-top: 15px; padding: 15px; border: 2px solid var(--primary-color); border-radius: 5px; background-color: var(--medium-bg);">
-            <h4 style="margin-top: 0; color: var(--primary-color);">🎨 Custom Theme Creator</h4>
-            <p style="color: var(--primary-color); font-size: 12px; margin: 5px 0;">Create your own unique theme by picking colors for the accent and background.</p>
-            
-            <div style="display: flex; gap: 20px; margin-top: 10px;">
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                    <label for="customPrimaryColor" style="color: var(--primary-color); font-weight: bold; font-size: 14px;">Primary Accent Color:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="color" id="customPrimaryColor" value="#ffae00" title="Pick primary accent color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid var(--primary-color); border-radius: 3px;">
-                        <span id="customPrimaryValue" style="color: var(--primary-color); font-size: 12px; font-family: monospace; min-width: 80px;">#ffae00</span>
-                    </div>
-                </div>
+  // [name, primary, secondary]
+  const ARCH = [
+    ['Siegebreaker', 0, 2], ['Bulwark', 0, 4],
+    ['Brawler', 1, 0], ['Skirmisher', 1, 5],
+    ['Grenadier', 2, 3], ['Demolitionist', 2, 4],
+    ['Colossus', 3, 0], ['Paragon', 3, 1],
+    ['Reaver', 4, 1], ['Specialist', 4, 5],
+    ['Gunner', 5, 2], ['Powerhouse', 5, 3]
+  ].map(([name, p, s], i) => ({ i, name, p, s }));
 
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                    <label for="customDarkColor" style="color: var(--primary-color); font-weight: bold; font-size: 14px;">Dark Background Color:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="color" id="customDarkColor" value="#1e1e1e" title="Pick dark background color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid var(--primary-color); border-radius: 3px;">
-                        <span id="customDarkValue" style="color: var(--primary-color); font-size: 12px; font-family: monospace; min-width: 80px;">#1e1e1e</span>
-                    </div>
-                </div>
-            </div>
+  // Edge of Fate launch set (one archetype per primary stat)
+  const LAUNCH = ['Bulwark', 'Brawler', 'Grenadier', 'Paragon', 'Specialist', 'Gunner'];
 
-            <p style="color: var(--primary-color); font-size: 11px; margin-top: 10px; font-style: italic;">💡 Medium and Light variants are automatically generated from your primary color.</p>
-            <button id="resetCustomColorButton" style="margin-top: 12px; padding: 8px 16px; background-color: var(--medium-bg); color: var(--primary-color); border: 1px solid var(--primary-color); border-radius: 3px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 0 10px var(--primary-color)'" onmouseout="this.style.boxShadow='none'">Reset to Default</button>
-        </div>
+  // Typical roll per tier (base stats before masterwork). Tier 5 is fixed at 30/25/20.
+  // Tiers 1-4 roll randomly; these are the middle of the ranges players have observed in game
+  // (ranges kept for display). Real pieces can be a few points off either way.
+  const TIERS = {
+    1: { pri: 30, sec: 17, ter: 10, total: '52-57', range: 'about 30 / 17 / 10', tuning: false },
+    2: { pri: 30, sec: 20, ter: 12, total: '58-63', range: 'about 30 / 20 / 12', tuning: false },
+    3: { pri: 30, sec: 22, ter: 15, total: '64-69', range: '29-30 / 21-23 / 14-16', tuning: false },
+    4: { pri: 30, sec: 24, ter: 17, total: '70-75', range: '30 / 24-25 / 16-18', tuning: false },
+    5: { pri: 30, sec: 25, ter: 20, total: '75', range: '30 / 25 / 20', tuning: true }
+  };
+  const MW = 5, MOD = 10, TUNE = 5, CAP = 200;
 
-        <!-- Custom Aero Color Picker Section (Hidden by default) -->
-        <div id="customAeroColorSection" style="display: none; margin-top: 15px; padding: 15px; border: 2px solid rgba(var(--glow-color-rgb), 0.6); border-radius: 5px; background-color: rgba(15, 30, 50, 0.8); box-shadow: 0 0 10px rgba(var(--glow-color-rgb), 0.3);">
-            <h4 style="margin-top: 0; color: rgba(0, 255, 255, 0.9);">✨ Custom Aero Theme Creator</h4>
-            <p style="color: rgba(0, 255, 255, 0.7); font-size: 12px; margin: 5px 0;">Design your own Frutiger Aero theme with custom colors and glow effects.</p>
-            
-            <div style="display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap;">
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                    <label for="customAeroPrimaryColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Primary Accent Color:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="color" id="customAeroPrimaryColor" value="#00ffff" title="Pick aero accent color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
-                        <span id="customAeroPrimaryValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#00ffff</span>
-                    </div>
-                </div>
+  function tertOptions(a) {
+    const r = [];
+    for (let s = 0; s < 6; s++) if (s !== ARCH[a].p && s !== ARCH[a].s) r.push(s);
+    return r;
+  }
+  const TOPT = ARCH.map(A => tertOptions(A.i));
+  // LOW[a][t] = the three stats that get masterwork points on archetype a with 3rd stat t
+  const LOW = ARCH.map(A => {
+    const row = [];
+    for (let t = 0; t < 6; t++) {
+      const r = [];
+      for (let s = 0; s < 6; s++) if (s !== A.p && s !== A.s && s !== t) r.push(s);
+      row.push(r);
+    }
+    return row;
+  });
 
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                    <label for="customAeroDarkColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Dark Background Color:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="color" id="customAeroDarkColor" value="#0f1e32" title="Pick aero dark background" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
-                        <span id="customAeroDarkValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#0f1e32</span>
-                    </div>
-                </div>
+  // full stat vector of one fully masterworked piece
+  function pieceVec(a, tert, pri, sec, ter) {
+    const v = [MW, MW, MW, MW, MW, MW];
+    v[ARCH[a].p] = pri; v[ARCH[a].s] = sec;
+    if (tert >= 0) v[tert] = ter;
+    return v;
+  }
 
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                    <label for="customAeroGlowColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Glow Color:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="color" id="customAeroGlowColor" value="#00ffff" title="Pick glow color for effects" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
-                        <span id="customAeroGlowValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#00ffff</span>
-                    </div>
-                </div>
+  const scratchUsed = new Uint8Array(8);
+  let W = [1, 1, 1, 1, 1, 1]; // priority stats count 3x
 
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                    <label for="customAeroTextColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Primary Text Color:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="color" id="customAeroTextColor" value="#00ffff" title="Pick primary text color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
-                        <span id="customAeroTextValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#00ffff</span>
-                    </div>
-                </div>
+  // Fill gaps with stat mods (+10, free choice), then tuning (+5 tuned / -5 donor),
+  // then Balanced tuning (+1 to the piece's three lowest stats) on unused tuning slots.
+  // tFixed[k]: -1 = tuned stat still to farm, -2 = Balanced only, -9 = no tuning slot, else the piece's tuned stat.
+  function finish(vec, T, nMods, tFixed, low, rec, res) {
+    let mods = nMods, farm = 0, tunes = 0, modsUsed = 0;
+    const nT = tFixed.length;
+    const used = rec ? rec.used : scratchUsed;
+    if (!rec) for (let k = 0; k < nT; k++) used[k] = 0;
+    while (mods > 0) {
+      let b = -1, bd = 0;
+      for (let s = 0; s < 6; s++) { const d = (T[s] - vec[s]) * W[s]; if (d > bd) { bd = d; b = s; } }
+      if (b < 0) break;
+      vec[b] += MOD; mods--; modsUsed++;
+      if (rec) rec.mods.push(b);
+    }
+    let blocked = 0;
+    for (let iter = 0; iter < 12; iter++) {
+      let b = -1, bd = 0;
+      for (let s = 0; s < 6; s++) {
+        if (blocked & (1 << s)) continue;
+        const d = (T[s] - vec[s]) * W[s]; if (d > bd) { bd = d; b = s; }
+      }
+      if (b < 0) break;
+      let slot = -1, isFarm = false;
+      for (let k = 0; k < nT; k++) if (!used[k] && tFixed[k] === b) { slot = k; break; }
+      if (slot < 0) for (let k = 0; k < nT; k++) if (!used[k] && tFixed[k] === -1) { slot = k; isFarm = true; break; }
+      let donor = -1, ds = TUNE - 1;
+      if (slot >= 0) for (let s = 0; s < 6; s++) {
+        if (s === b) continue;
+        const su = vec[s] - T[s];
+        if (su > ds && vec[s] >= TUNE) { ds = su; donor = s; }
+      }
+      if (slot < 0 || donor < 0) { blocked |= 1 << b; continue; }
+      vec[b] += TUNE; vec[donor] -= TUNE; used[slot] = 1; tunes++; if (isFarm) farm++;
+      if (rec) rec.tunes[slot] = { kind: 'dir', plus: b, minus: donor, farm: isFarm };
+    }
+    for (let k = 0; k < nT; k++) {
+      if (used[k] || tFixed[k] === -9) continue;
+      const L = low[k];
+      if (T[L[0]] > vec[L[0]] || T[L[1]] > vec[L[1]] || T[L[2]] > vec[L[2]]) {
+        vec[L[0]]++; vec[L[1]]++; vec[L[2]]++;
+        used[k] = 2;
+        if (rec) rec.tunes[k] = { kind: 'bal', stats: L.slice() };
+      }
+    }
+    let short = 0, wshort = 0, waste = 0;
+    for (let s = 0; s < 6; s++) {
+      const v = vec[s] > CAP ? CAP : (vec[s] < 0 ? 0 : vec[s]);
+      if (T[s] > v) { short += T[s] - v; wshort += (T[s] - v) * W[s]; }
+      if (vec[s] > CAP) waste += vec[s] - CAP;
+    }
+    if (rec) { rec.modsLeft = mods; rec.farm = farm; rec.tunesUsed = tunes; rec.modsUsed = modsUsed; }
+    if (res) { res.short = short; res.farm = farm; }
+    return wshort * 100000 + farm * 1000 + modsUsed * 10 + waste;
+  }
 
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                    <label for="customAeroLightTextColor" style="color: rgba(0, 255, 255, 0.9); font-weight: bold; font-size: 14px;">Light Text Color:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="color" id="customAeroLightTextColor" value="#b0e0e6" title="Pick light text color" style="cursor: pointer; width: 60px; height: 40px; border: 2px solid rgba(var(--glow-color-rgb), 0.5); border-radius: 3px; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.3);">
-                        <span id="customAeroLightTextValue" style="color: rgba(0, 255, 255, 0.7); font-size: 12px; font-family: monospace; min-width: 80px;">#b0e0e6</span>
-                    </div>
-                </div>
-            </div>
-            
-            <p style="color: rgba(0, 255, 255, 0.6); font-size: 11px; margin-top: 10px; font-style: italic;">✨ Medium and Light variants are automatically generated with custom glow effects.</p>
-            <button id="resetCustomAeroButton" style="margin-top: 12px; padding: 8px 16px; background: linear-gradient(135deg, rgba(0, 100, 150, 0.4) 0%, rgba(0, 80, 120, 0.3) 100%); color: rgba(var(--glow-color-rgb), 0.9); border: 1px solid rgba(var(--glow-color-rgb), 0.4); border-radius: 3px; cursor: pointer; font-weight: bold; box-shadow: 0 0 8px rgba(var(--glow-color-rgb), 0.2); transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 0 15px rgba(' + document.documentElement.style.getPropertyValue('--glow-color-rgb') + ', 0.4)'" onmouseout="this.style.boxShadow='0 0 8px rgba(' + document.documentElement.style.getPropertyValue('--glow-color-rgb') + ', 0.2)'">Reset to Default Cyan</button>
-        </div>
-    </div>
+  function shapeOf(archList) {
+    const c = {};
+    for (const a of archList) c[a] = (c[a] || 0) + 1;
+    return Object.values(c).sort((x, y) => y - x).join('+');
+  }
+  function partitions(n, max = n) {
+    if (n === 0) return [[]];
+    const r = [];
+    for (let k = Math.min(n, max); k >= 1; k--) for (const rest of partitions(n - k, k)) r.push([k, ...rest]);
+    return r;
+  }
 
-    <div class="settings-section">
-        <h3>Default Search Settings</h3>
-        <div class="settings-item">
-            <label for="defaultWeighting">Default Weighting Strategy:</label>
-            <select id="defaultWeighting">
-                <option value="1.5">1.5x (Balanced)</option>
-                <option value="2.0">2x (Aggressive)</option>
-            </select>
-        </div>
-    </div>
+  // input.slots: array(5) of
+  //   {mode:'free'}
+  //   {mode:'arch', arch, tert(-1 unknown), tune(-1 unknown | -2 balanced | stat), tier(1-5), vals:[pri,sec,ter] (optional, for tiers 1-4)}
+  //   {mode:'custom', stats:[6]}   (exotic or anything else; already masterworked, no tuning)
+  function search(input) {
+    const T = input.targets.map(x => Math.max(0, Math.min(CAP, x | 0)));
+    const F = input.frags.map(x => x | 0);
+    const pool = input.pool.slice().sort((a, b) => a - b);
+    const specs = input.slots;
+    const K = input.perShape || 10;
+    const farmTier = TIERS[input.farmTier] ? input.farmTier : 5;
+    const FT = TIERS[farmTier];
 
-    <div class="settings-section">
-        <h3>About This Tool</h3>
-        <p class="info-text">
-            <strong>Destiny 2 Armor Archetype Helper v1.0</strong>
-        </p>
-        <p class="info-text">
-            This tool helps you identify which armor archetypes to farm based on your desired stat spread.
-        </p>
-        <p class="info-text">
-            <strong>How It Works:</strong>
-        </p>
-        <ul class="info-list">
-            <li>Use the sliders to set your target stats (0-200)</li>
-            <li>Add fragment bonuses to account for your character's fragments</li>
-            <li>Select a weighting strategy (Balanced or Aggressive)</li>
-            <li>Click "Search Combos" to find the best armor archetypes</li>
-            <li>The tool will recommend which archetypes to farm for each armor piece</li>
-        </ul>
-        <p class="info-text">
-            <strong>Weighting Strategies:</strong>
-        </p>
-        <ul class="info-list">
-            <li><strong>Balanced (1.5x):</strong> Gives equal priority to all your target stats</li>
-            <li><strong>Aggressive (2x):</strong> Heavily prioritizes the stats with the highest targets</li>
-        </ul>
-    </div>
+    const fixed = F.slice();
+    const lockedArch = [];
+    const freeSlots = [];
+    let customCount = 0, fixedMods = 0;
+    specs.forEach((sp, slot) => {
+      // a mod the player already put on a piece they own counts as fixed
+      if (sp.mode !== 'free' && sp.mod >= 0 && sp.mod < 6) { fixed[sp.mod] += MOD; fixedMods++; }
+      if (sp.mode === 'custom') { customCount++; for (let s = 0; s < 6; s++) fixed[s] += sp.stats[s] | 0; }
+      else if (sp.mode === 'arch') {
+        const tier = TIERS[sp.tier] ? sp.tier : 5;
+        const tm = TIERS[tier];
+        const vals = tier < 5 && Array.isArray(sp.vals) ? sp.vals.map(x => x | 0) : [tm.pri, tm.sec, tm.ter];
+        // tuning on a piece you own: tune = its tuned stat (-1 = not recorded)
+        // tuneUse: 'auto' planner decides, 'bal' Balanced applied, 'dir' +5 tuned / -5 tuneMinus applied, 'none' nothing applied
+        let tFix = -9, forced = null;
+        if (tm.tuning) {
+          const use = sp.tuneUse || 'auto';
+          if (use === 'none') tFix = -9;
+          else if (use === 'bal') {
+            if (sp.tert >= 0) { forced = { kind: 'bal', stats: LOW[sp.arch][sp.tert].slice(), applied: true }; for (const st of forced.stats) fixed[st] += 1; }
+            else tFix = -2;
+          } else if (use === 'dir' && sp.tune >= 0 && sp.tuneMinus >= 0 && sp.tuneMinus !== sp.tune) {
+            forced = { kind: 'dir', plus: sp.tune, minus: sp.tuneMinus, farm: false, applied: true };
+            fixed[sp.tune] += TUNE; fixed[sp.tuneMinus] -= TUNE;
+          } else tFix = sp.tune >= 0 ? sp.tune : -2; // unknown tuned stat on a piece you own: only Balanced is certain
+        }
+        lockedArch.push({ slot, arch: sp.arch, tert: sp.tert, tune: tFix, forced, tier, pri: vals[0], sec: vals[1], ter: vals[2] });
+      } else freeSlots.push(slot);
+    });
+    const nFree = freeSlots.length;
+    const nMods = 5 - fixedMods;
+    const nLeg = 5 - customCount;
+    const freeTune = FT.tuning ? -1 : -9;
 
-    <div class="settings-section">
-        <h3>Data Management</h3>
-        <button id="resetButton" class="settings-button reset-button">Reset All Settings</button>
-    </div>
-</div>
-    
-    <script src="D2ArchetypeHelper.js"></script>
+    const shapeBest = new Map();
+    const good = [];
+    let evaluated = 0;
+
+    if (nFree > 0 && pool.length === 0) return { error: 'Tick at least one archetype you can farm.', T, F };
+
+    const multiset = new Array(nFree);
+    const vec = new Int32Array(6);
+    const res = { short: 0, farm: 0 };
+    const prune = input.prune !== false;
+    W = (input.priority || [0, 0, 0, 0, 0, 0]).map(p => (p ? 3 : 1));
+    const nL = lockedArch.length;
+
+    function evalMultiset() {
+      const archs = [], tFix = [], tertFixed = [], pri = [], sec = [], terB = [];
+      for (const L of lockedArch) { archs.push(L.arch); tFix.push(L.tune); tertFixed.push(L.tert); pri.push(L.pri); sec.push(L.sec); terB.push(L.ter - MW); }
+      for (let i = 0; i < nFree; i++) { archs.push(multiset[i]); tFix.push(freeTune); tertFixed.push(-1); pri.push(FT.pri); sec.push(FT.sec); terB.push(FT.ter - MW); }
+      const n = archs.length;
+      const base = fixed.slice();
+      for (let i = 0; i < n; i++) {
+        const A = ARCH[archs[i]];
+        for (let s = 0; s < 6; s++) base[s] += MW;
+        base[A.p] += pri[i] - MW; base[A.s] += sec[i] - MW;
+      }
+      const terts = new Array(n);
+      const choose = [];
+      for (let i = 0; i < n; i++) {
+        if (tertFixed[i] >= 0) { terts[i] = tertFixed[i]; base[tertFixed[i]] += terB[i]; }
+        else choose.push(i);
+      }
+      // a 3rd stat landing on a stat already over target only helps as a tuning donor: keep one such option
+      const tertUseful = {};
+      if (prune) for (const a of new Set(archs)) {
+        const need = TOPT[a].filter(s => T[s] - base[s] > 0);
+        const dump = TOPT[a].filter(s => T[s] - base[s] <= 0).sort((x, y) => (base[y] - T[y]) - (base[x] - T[x]));
+        tertUseful[a] = need.concat(dump.slice(0, 1)).sort((x, y) => x - y);
+      }
+      const seen = new Set();
+      let best = null;
+      const low = new Array(n);
+      function dfs(ci) {
+        if (ci === choose.length) {
+          // dedupe: free pieces are interchangeable, locked ones are not
+          const cnt = [0, 0, 0, 0, 0, 0];
+          let lockKey = 0;
+          for (const i of choose) { if (i >= nL) cnt[terts[i]]++; else lockKey = lockKey * 7 + terts[i] + 1; }
+          let key = lockKey;
+          for (let s = 0; s < 6; s++) key = key * 6 + cnt[s];
+          if (seen.has(key)) return;
+          seen.add(key);
+          for (let s = 0; s < 6; s++) vec[s] = base[s];
+          for (const i of choose) vec[terts[i]] += terB[i];
+          for (let i = 0; i < n; i++) low[i] = LOW[archs[i]][terts[i]];
+          const sc = finish(vec, T, nMods, tFix, low, null, res);
+          evaluated++;
+          if (!best || sc < best.score) best = { score: sc, short: res.short, terts: terts.slice() };
+          return;
+        }
+        const i = choose[ci];
+        const opts = prune ? tertUseful[archs[i]] : TOPT[archs[i]];
+        let minT = -1;
+        if (ci > 0) { const j = choose[ci - 1]; if (archs[j] === archs[i] && i >= nL && j >= nL) minT = terts[j]; }
+        for (const t of opts) {
+          if (t < minT) continue;
+          terts[i] = t;
+          dfs(ci + 1);
+        }
+      }
+      dfs(0);
+      const shape = shapeOf(archs);
+      const entry = { score: best.score, short: best.short, archs: archs.slice(), terts: best.terts, shape };
+      let arr = shapeBest.get(shape);
+      if (!arr) { arr = []; shapeBest.set(shape, arr); }
+      insertTop(arr, entry, K);
+      insertTop(good, entry, 400);
+    }
+
+    function rec(pos, start) {
+      if (pos === nFree) { evalMultiset(); return; }
+      for (let k = start; k < pool.length; k++) { multiset[pos] = pool[k]; rec(pos + 1, k); }
+    }
+    rec(0, 0);
+
+    const bestShort = good.length ? good[0].short : 0;
+    const near = good.filter(g => g.short <= bestShort + 5);
+    const priority = ARCH.map(a => {
+      let inBuilds = 0, copies = 0;
+      for (const g of near) {
+        const c = g.archs.slice(nL).filter(x => x === a.i).length;
+        if (c > 0) inBuilds++;
+        copies += c;
+      }
+      return { arch: a.i, pct: near.length ? inBuilds / near.length : 0, avg: near.length ? copies / near.length : 0, inPool: pool.includes(a.i) };
+    });
+
+    const shapeOrder = partitions(nLeg).map(p => p.join('+'));
+    const shapes = shapeOrder.filter(k => shapeBest.has(k)).map(k => ({
+      key: k,
+      builds: shapeBest.get(k).map(e => detail(e)).sort(compareBuilds).slice(0, 5)
+    }));
+
+    function detail(e) {
+      const pieces = [];
+      lockedArch.forEach((L, i) => pieces.push({ slot: L.slot, locked: true, arch: e.archs[i], tert: e.terts[i], tertLocked: L.tert >= 0, tuneFixed: L.tune, forced: L.forced, tier: L.tier, pri: L.pri, sec: L.sec, ter: L.ter }));
+      const freeP = [];
+      for (let i = nL; i < e.archs.length; i++) freeP.push({ locked: false, arch: e.archs[i], tert: e.terts[i], tertLocked: false, tuneFixed: freeTune, tier: farmTier, pri: FT.pri, sec: FT.sec, ter: FT.ter });
+      freeP.sort((a, b) => a.arch - b.arch || a.tert - b.tert);
+      freeP.forEach((p, i) => { p.slot = freeSlots[i]; pieces.push(p); });
+
+      const vecFor = (list, tOverride, k) => {
+        const v = Int32Array.from(fixed);
+        list.forEach((q, j) => {
+          const t = j === k ? tOverride : q.tert;
+          const pv = pieceVec(q.arch, t, q.pri, q.sec, q.ter);
+          for (let s = 0; s < 6; s++) v[s] += pv[s];
+        });
+        return v;
+      };
+      const v = vecFor(pieces, -1, -1);
+      const tFix = pieces.map(p => p.tuneFixed);
+      const low = pieces.map(p => LOW[p.arch][p.tert]);
+      const R = { used: new Uint8Array(pieces.length), mods: [], tunes: [] };
+      const r = { short: 0, farm: 0 };
+      r.score = finish(v, T, nMods, tFix, low, R, r);
+      pieces.forEach((p, k) => { p.tune = R.tunes[k] || p.forced || null; });
+      const planMods = [0, 0, 0, 0, 0, 0], planTune = [0, 0, 0, 0, 0, 0];
+      R.mods.forEach(st => planMods[st]++);
+      R.tunes.forEach(x => { if (!x) return; if (x.kind === 'dir') { planTune[x.plus] += TUNE; planTune[x.minus] -= TUNE; } else x.stats.forEach(st => planTune[st] += 1); });
+
+      // which other 3rd stats would still work for each piece whose 3rd stat isn't known yet
+      pieces.forEach((p, k) => {
+        if (p.tertLocked) { p.tertAlts = [p.tert]; return; }
+        const ok = [], alt = {};
+        for (const t of TOPT[p.arch]) {
+          const v2 = vecFor(pieces, t, k);
+          const low2 = pieces.map((q, j) => LOW[q.arch][j === k ? t : q.tert]);
+          const r2 = { short: 0, farm: 0 };
+          const rec2 = { used: new Uint8Array(pieces.length), mods: [], tunes: [] };
+          const sc2 = finish(v2, T, nMods, tFix, low2, rec2, r2);
+          if (sc2 <= r.score + 20 && r2.short <= r.short) {
+            ok.push(t);
+            // how this option adds up: final totals plus where the mods and tuning end up
+            const mods = [0, 0, 0, 0, 0, 0], tune = [0, 0, 0, 0, 0, 0];
+            rec2.mods.forEach(st => mods[st]++);
+            rec2.tunes.forEach(x => { if (!x) return; if (x.kind === 'dir') { tune[x.plus] += TUNE; tune[x.minus] -= TUNE; } else x.stats.forEach(st => tune[st] += 1); });
+            alt[t] = { final: Array.from(v2), mods, tune };
+          }
+        }
+        p.tertAlts = ok.length ? ok : [p.tert];
+        p.altFinal = alt; // final totals if this piece rolls each 3rd stat (other pieces' mods/tuning re-planned)
+      });
+
+      const bySlot = new Array(5).fill(null);
+      for (const p of pieces) bySlot[p.slot] = p;
+      specs.forEach((sp, slot) => { if (sp.mode === 'custom') bySlot[slot] = { slot, custom: true, stats: sp.stats.slice(), locked: true, tune: null }; });
+      const modList = R.mods.slice();
+      bySlot.forEach((p, slot) => {
+        const sp = specs[slot];
+        if (sp.mode !== 'free' && sp.mod >= 0 && sp.mod < 6) { p.mod = sp.mod; p.modFixed = true; }
+        else p.mod = modList.length ? modList.shift() : -1;
+      });
+
+      const parts = { armor: [0, 0, 0, 0, 0, 0], mods: [0, 0, 0, 0, 0, 0], tuneUp: [0, 0, 0, 0, 0, 0], tuneDown: [0, 0, 0, 0, 0, 0], frag: F.slice(), math: [[], [], [], [], [], []] };
+      bySlot.forEach(p => {
+        if (p.custom) {
+          for (let s = 0; s < 6; s++) { parts.armor[s] += p.stats[s] | 0; if (p.stats[s]) parts.math[s].push(String(p.stats[s] | 0)); }
+        } else {
+          const b = pieceVec(p.arch, p.tert, p.pri, p.sec, p.ter);
+          for (let s = 0; s < 6; s++) { parts.armor[s] += b[s]; parts.math[s].push(String(b[s])); }
+          if (p.tune && p.tune.kind === 'dir') { parts.tuneUp[p.tune.plus] += TUNE; parts.tuneDown[p.tune.minus] += TUNE; }
+          if (p.tune && p.tune.kind === 'bal') for (const s of p.tune.stats) parts.tuneUp[s] += 1;
+        }
+        if (p.mod >= 0) parts.mods[p.mod] += MOD;
+      });
+      const final = [0, 1, 2, 3, 4, 5].map(s => parts.armor[s] + parts.mods[s] + parts.tuneUp[s] - parts.tuneDown[s] + parts.frag[s]);
+      let ease = 1, picky = 0, open = 0;
+      for (const p of pieces) if (!p.tertLocked) { open++; ease *= p.tertAlts.length / 4; if (p.tertAlts.length < 4) picky++; }
+      return {
+        shape: e.shape, short: r.short, farm: R.farm, modsLeft: R.modsLeft, score: r.score, ease, picky, open, planMods, planTune,
+        wshort: Math.floor(r.score / 100000),
+        slots: bySlot, final, parts,
+        key: e.archs.slice(nL).sort((a, b) => a - b).join('.') + '|' + e.terts.join('.')
+      };
+    }
+
+    let avail = fixed.reduce((a, b) => a + b, 0) + nMods * MOD + nFree * (FT.pri + FT.sec + FT.ter + 3 * MW);
+    for (const L of lockedArch) avail += L.pri + L.sec + (L.tert >= 0 ? L.ter : L.ter) + 3 * MW;
+    return { T, F, shapes, priority, bestShort, evaluated, nLeg, nFree, farmTier, avail, totalTarget: T.reduce((a, b) => a + b, 0) };
+  }
+
+  function compareBuilds(a, b) {
+    return a.wshort - b.wshort || a.farm - b.farm || b.ease - a.ease || a.score - b.score;
+  }
+
+  function insertTop(arr, e, K) {
+    let i = arr.length;
+    while (i > 0 && arr[i - 1].score > e.score) i--;
+    if (i >= K) return;
+    arr.splice(i, 0, e);
+    if (arr.length > K) arr.pop();
+  }
+
+  G.D2 = { STATS, STAT_NAME, STAT_SHORT, SLOTS, ARCH, LAUNCH, TIERS, search, pieceVec, tertOptions, compareBuilds, CAP, MW };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const D = window.D2;
+  const N = D.STAT_NAME, SH = D.STAT_SHORT, A = D.ARCH, SLOT = D.SLOTS, TIERS = D.TIERS;
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const ab = (s) => `<span class="ab" style="color:var(--s${s})">${SH[s]}</span>`;
+  const full = (s) => `<span class="st" style="color:var(--s${s})">${N[s]}</span> (${SH[s]})`;
+  const SEP = ' <span class="sep" aria-hidden="true">|</span> ';
+  const LOCK_SVG = '<svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.5" width="8" height="6" rx="1" fill="currentColor"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>';
+  const LAUNCH_IDX = D.LAUNCH.map(n => A.find(a => a.name === n).i);
+  const ACCENTS = [['Gold', '#ffae00', '#1c1400'], ['Arc', '#7fd6ee', '#082028'], ['Void', '#c08cf0', '#1d0f2b'], ['Solar', '#ff7b3a', '#2a1406'], ['Strand', '#5fe08f', '#06210f'], ['Stasis', '#7d9bff', '#0b1430']];
+  const MIX_NAME = { '5': 'All 5 the same', '4+1': '4 + 1', '3+2': '3 + 2', '3+1+1': '3 + 1 + 1', '2+2+1': '2 + 2 + 1', '2+1+1+1': '2 + 1 + 1 + 1', '1+1+1+1+1': 'All 5 different',
+    '4': 'All 4 the same', '3+1': '3 + 1', '2+2': '2 + 2', '2+1+1': '2 + 1 + 1', '1+1+1+1': 'All 4 different', '3': 'All 3 the same', '2+1': '2 + 1', '1+1+1': 'All 3 different', '2': 'Both the same', '1+1': 'Both different', '1': 'One piece', '': 'All slots filled' };
+  // Armor sets (light.gg Monument of Triumph list, 56 sets): [name, source, 2-piece bonus, 4-piece bonus, group]
+  const SETS = [["AION Adapter", "Kepler", "Force Absorption", "Reactive Shock", "Edge of Fate"], ["AION Renewal", "Kepler", "Force Converter", "Reactive Booster", "Edge of Fate"], ["Bushido", "Pinnacle activities", "Iaido", "Unfaltering Focus", "Edge of Fate"], ["Collective Psyche", "The Desert Perpetual", "Accretion", "Doppler Effect", "Edge of Fate"], ["Disaster Corps", "Portal", "Pleas Heard", "Magnificent Duty", "Edge of Fate"], ["Iron Panoply", "Iron Banner", "Vigilant Watch", "Iron Conviction", "Edge of Fate"], ["Last Discipline", "Portal", "Terminal Velocity", "Power Loader", "Edge of Fate"], ["Lustrous", "Solstice", "Photogalvanic", "Cauterize", "Edge of Fate"], ["Smoke Jumper", "Portal", "Ride Together, Die Together", "Too Old for This", "Edge of Fate"], ["Techsec", "Portal", "Wrecker", "Concussive Rounds", "Edge of Fate"], ["Twofold Crown", "Trials of Osiris", "Crook and Flail", "Gift of Sight", "Edge of Fate"], ["Wayward Psyche", "The Desert Perpetual (Epic)", "Special Relativity", "Superluminal Motion", "Edge of Fate"], ["Ferropotent", "Ferropotent Suit", "Rapid Repair", "Built from Scratch", "Renegades"], ["New Demotic", "Trials of Osiris", "Paroli", "Martingale", "Renegades"], ["Sage Protector", "Equilibrium dungeon", "Combat Meditation", "Blade Focus", "Renegades"], ["Shrewd Survivor", "Lawless Frontier", "Reflex Action", "Hotshot", "Renegades"], ["Swordmaster", "Pinnacle activities", "Balestra", "Stesso Tempo", "Renegades"], ["Thriving Survivor", "Lawless Frontier", "Opening Act", "Room Clearing", "Renegades"], ["Wild Anthem", "Wild Anthem Suit", "Fanfare", "Suros Harmony", "Renegades"], ["Apostate's Blade", "Pit of Heresy", "Regenerative Threshold", "Melee Conduction", "Monument of Triumph"], ["Atheon's Memory", "Vault of Glass", "Radiolaria Breach", "Collective Power", "Monument of Triumph"], ["Circuit", "Sparrow Racing League", "Revving Up", "Dielectric Drift", "Monument of Triumph"], ["CODA", "Prophecy", "Between Poles", "So Very Thin", "Monument of Triumph"], ["Crota's Memory", "Crota's End", "Cursed Fist", "Power of the Son", "Monument of Triumph"], ["Cruel Electrum", "Trials of Osiris", "Primary Survivor", "Primary Phantom", "Monument of Triumph"], ["Crystocrene", "Europa", "Resupply", "From the Storm", "Monument of Triumph"], ["Cyberserpent Null", "Gambit", "Adrenal Rush", "Bountiful Munitions", "Monument of Triumph"], ["Dark Age", "Warlord's Ruin", "Taking Initiative", "Healing Initiative", "Monument of Triumph"], ["Deep Explorer", "Duality", "Built Bitter", "Bittersweet", "Monument of Triumph"], ["Dreambane", "Moon", "Nightmarish Power", "Nightmarish Resilience", "Monument of Triumph"], ["Eutechnology", "Pinnacle activities", "Gift of the Ley Lines", "Techeun's Foresight", "Monument of Triumph"], ["Exodus Down", "Nessus", "Emergency Electromagnet", "Repurposed Charge", "Monument of Triumph"], ["First Ascent", "Pale Heart", "Stack 'Em Up", "Burn 'Em Down", "Monument of Triumph"], ["Flain", "Sundered Doctrine", "Sinew Stitching", "Knit Together", "Monument of Triumph"], ["Great Hunt", "Last Wish", "Taken Barrier", "Taken Armaments", "Monument of Triumph"], ["Iron Battalion", "Iron Banner", "Primary Honing", "Supercyclical", "Monument of Triumph"], ["Kentarch 3", "Garden of Salvation", "Network Admin", "Network Upload", "Monument of Triumph"], ["Legacy's Oath", "Deep Stone Crypt", "Augmented Servos", "God-like Judgment", "Monument of Triumph"], ["Luminopotent", "Portal", "Ionic Overclock", "Shock and Clear", "Monument of Triumph"], ["Nezarec's Nightmare", "Root of Nightmares", "Bad Dreams", "Dream-Devourer", "Monument of Triumph"], ["Oryx's Memory", "King's Fall", "Iron Sharpens Iron", "Ascendant Escape", "Monument of Triumph"], ["Pantheos Resplendent", "Pantheon", "Well Prepared", "Down the Line", "Monument of Triumph"], ["Per Audacia", "Crucible (Glory)", "Primary Chain", "Sublime Transit", "Monument of Triumph"], ["Promised", "Salvation's Edge", "Stable Resonance", "Resonance Redirection", "Monument of Triumph"], ["Resonant Fury", "Vow of the Disciple", "Resonant Plating", "Siphoning Touch", "Monument of Triumph"], ["Reverie Dawn", "Dreaming City", "A Wish for Protection", "A Wish Fulfilled", "Monument of Triumph"], ["Seventh Seraph", "Cosmodrome", "Rasputin's Wrath", "Rasputin's Reprisal", "Monument of Triumph"], ["Spacewalk", "Vesper's Host", "Augmented Armaments", "Augmented Explosives", "Monument of Triumph"], ["Taken King", "Ghosts of the Deep", "The Ceremony", "Lucent Swarm", "Monument of Triumph"], ["Techeun's Regalia", "Shattered Throne", "Queensfoil Rush", "Truth to Power", "Monument of Triumph"], ["Thunderhead", "Neomuna", "License to Thrill", "Lethal Weave", "Monument of Triumph"], ["TM Custom", "Spire of the Watcher", "Old Martian Diplomacy", "High Noon", "Monument of Triumph"], ["Triumphal Anthem", "Portal", "Scoot to Loot", "Shoot to Scoot", "Monument of Triumph"], ["Veritas", "Throne World", "Lucent Transmutation", "Lucent Tithes", "Monument of Triumph"], ["Wildwood", "EDZ", "Watchtower", "Field Expertise", "Monument of Triumph"], ["Yearning Echo", "Grasp of Avarice", "Untold Greed", "Overflowing Coffers", "Monument of Triumph"]];
+  const KEY = 'd2ah.v4';
+
+  const DEFAULT = () => ({
+    targets: [0, 0, 0, 0, 0, 0], frags: [0, 0, 0, 0, 0, 0], prio: [0, 0, 0, 0, 0, 0],
+    pool: A.map(() => 1), slots: [0, 1, 2, 3, 4].map(() => ({ mode: 'free' })), farmTier: 5
+  });
+  let S = Object.assign(DEFAULT(), { accent: 0, theme: null, howtoHidden: false, collection: [], done: { 1: false, 2: false, 3: false, 4: false } });
+  let R = null;
+  let sel = { key: null, opt: 0, archs: null, auto: true }; // which build is shown
+  let expanded = new Set();
+  let picked = null;   // roll being placed (tick box or drag)
+  let drop = newDrop(); // the 'Your drop' builder row
+  function newDrop() { return { arch: -1, tier: 0, tert: -1, tune: -1, mod: -1, set: -1, src: {} }; }
+  function setOptions(cur) {
+    const groups = ['Edge of Fate', 'Renegades', 'Monument of Triumph'];
+    return `<option value="-1"${cur < 0 ? ' selected' : ''}>No set / not sure</option>` + groups.map(g =>
+      `<optgroup label="${g}">${SETS.map((x, i) => [x, i]).filter(([x]) => x[4] === g).sort((a, b) => a[0][0].localeCompare(b[0][0])).map(([x, i]) => `<option value="${i}"${i === cur ? ' selected' : ''}>${esc(x[0])}</option>`).join('')}</optgroup>`).join('');
+  }
+  const setName = (i) => SETS[i] ? SETS[i][0] : '';
+  let dropped = false; // set when a drag ends on a slot
+  let page = 'planner';
+
+  // ---------- saving / loading ----------
+  function readStore() { try { return JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('d2ah.v3') || 'null'); } catch (e) { return null; } }
+  function applyPlan(s, into) {
+    if (!s || typeof s !== 'object') return;
+    const ok = (a, n) => Array.isArray(a) && a.length === n;
+    if (ok(s.targets, 6)) into.targets = s.targets.map(x => clamp(Math.round(+x || 0), 0, 200));
+    if (ok(s.frags, 6)) into.frags = s.frags.map(x => clamp(Math.round(+x || 0), -100, 100));
+    if (ok(s.prio, 6)) into.prio = s.prio.map(x => (x ? 1 : 0));
+    if (ok(s.pool, 12)) into.pool = s.pool.map(x => (x ? 1 : 0));
+    if (ok(s.slots, 5)) into.slots = s.slots.map(cleanSlot);
+    if (TIERS[s.farmTier]) into.farmTier = s.farmTier;
+  }
+  function cleanSlot(sp) {
+    if (sp && sp.mode === 'arch' && A[sp.arch]) {
+      const tier = TIERS[sp.tier] ? sp.tier : 5;
+      const out = { mode: 'arch', arch: sp.arch, tert: D.tertOptions(sp.arch).includes(sp.tert) ? sp.tert : -1,
+        tune: sp.tune >= 0 && sp.tune < 6 ? sp.tune : -1,
+        tuneUse: ['auto', 'bal', 'dir', 'none'].includes(sp.tuneUse) ? sp.tuneUse : (sp.tune === -2 ? 'bal' : 'auto'),
+        tuneMinus: sp.tuneMinus >= 0 && sp.tuneMinus < 6 ? sp.tuneMinus : -1,
+        tier, order: sp.order | 0 || 1, cid: sp.cid || null, mod: sp.mod >= 0 && sp.mod < 6 ? sp.mod : -1, set: SETS[sp.set] ? sp.set : -1 };
+      if (tier < 5) out.vals = Array.isArray(sp.vals) && sp.vals.length === 3 ? sp.vals.map(x => clamp(Math.round(+x || 0), 0, 40)) : [TIERS[tier].pri, TIERS[tier].sec, TIERS[tier].ter];
+      return out;
+    }
+    if (sp && sp.mode === 'custom' && Array.isArray(sp.stats) && sp.stats.length === 6) return { mode: 'custom', stats: sp.stats.map(x => clamp(Math.round(+x || 0), 0, 100)), order: sp.order | 0 || 1, cid: sp.cid || null, mod: sp.mod >= 0 && sp.mod < 6 ? sp.mod : -1 };
+    return { mode: 'free' };
+  }
+  (function load() {
+    const st = readStore();
+    if (st) {
+      applyPlan(st, S);
+      if (Number.isInteger(st.accent) && ACCENTS[st.accent]) S.accent = st.accent;
+      if (['light', 'dark', 'black'].includes(st.theme)) S.theme = st.theme;
+      if (typeof st.howtoHidden === 'boolean') S.howtoHidden = st.howtoHidden;
+      if (st.done && typeof st.done === 'object') S.done = { 1: !!st.done[1], 2: !!st.done[2], 3: !!st.done[3], 4: !!st.done[4] };
+      if (Array.isArray(st.collection)) S.collection = st.collection.filter(c => c && (A[c.arch] || c.arch === 'custom') && c.slot >= 0 && c.slot < 5).slice(0, 300);
+    }
+    // a share link replaces the plan (targets, archetypes, placed pieces) but never your saved armor or look
+    try {
+      if (location.hash.length > 1) {
+        const sh = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
+        const fresh = DEFAULT(); applyPlan(sh, fresh); Object.assign(S, fresh);
+      }
+    } catch (e) { /* bad link */ }
+  })();
+  const planState = () => ({ targets: S.targets, frags: S.frags, prio: S.prio, pool: S.pool, slots: S.slots, farmTier: S.farmTier });
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ ...planState(), accent: S.accent, theme: S.theme, howtoHidden: S.howtoHidden, collection: S.collection, done: S.done })); } catch (e) { /* storage blocked */ }
+  }
+
+  // ---------- search (background worker when possible) ----------
+  let worker = null, reqId = 0, timer = null;
+  try {
+    const src = document.getElementById('engine').textContent + '\nself.onmessage=function(e){self.postMessage({id:e.data.id,r:self.D2.search(e.data.input)});};';
+    worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    worker.onmessage = (e) => { if (e.data.id === reqId) { busy(false); onResults(e.data.r); } };
+    worker.onerror = () => { worker = null; run(); };
+  } catch (e) { worker = null; }
+  function input() {
+    return {
+      targets: S.targets.slice(), frags: S.frags.slice(), priority: S.prio.slice(), farmTier: S.farmTier,
+      pool: A.filter((a, i) => S.pool[i]).map(a => a.i),
+      slots: S.slots.map(sp => sp.mode === 'custom' ? { mode: 'custom', stats: sp.stats.slice(), mod: sp.mod } : sp.mode === 'arch' ? { ...sp } : { mode: 'free' }),
+      perShape: 10
+    };
+  }
+  function schedule(delay = 180) { clearTimeout(timer); save(); renderConfirms(); renderBudget(); renderLockWarn(); timer = setTimeout(run, delay); }
+  function run() {
+    reqId++; busy(true);
+    const inp = input();
+    if (worker) { worker.postMessage({ id: reqId, input: inp }); return; }
+    setTimeout(() => { const r = D.search(inp); busy(false); onResults(r); }, 20);
+  }
+  function busy(b) { const el = $('#status .busy'); if (el) el.hidden = !b; document.body.dataset.busy = b ? '1' : ''; }
+
+  // ---------- small formatters ----------
+  const placedCount = () => S.slots.filter(sp => sp.mode !== 'free').length;
+  function mixHTML(b) {
+    const c = {};
+    b.slots.forEach(p => { if (!p.custom) c[p.arch] = (c[p.arch] || 0) + 1; });
+    const parts = Object.entries(c).sort((x, y) => y[1] - x[1] || x[0] - y[0]).map(([a, n]) => `<span class="mx">${A[a].name}<span class="x">× ${n}</span></span>`);
+    if (b.slots.some(p => p.custom)) parts.push('<span class="mx">Exotic<span class="x">× 1</span></span>');
+    return parts.join(SEP);
+  }
+  const archKey = (b) => b.slots.map(p => p.custom ? 'x' : p.arch).sort().join('.');
+  const mainStats = (a, pri = 30, sec = 25) => `${pri} ${ab(A[a].p)}${SEP}${sec} ${ab(A[a].s)}`;
+  function shortList(b) {
+    const out = [];
+    for (let s = 0; s < 6; s++) { const d = R.T[s] - clamp(b.final[s], 0, 200); if (d > 0) out.push(`${N[s]} −${d}`); }
+    return out.join(', ');
+  }
+  const resultHTML = (b) => b.short === 0 ? '<span class="ok">✓ Hits all targets</span>'
+    : `<span class="bad">✗ ${b.short} short</span><span class="sub">${esc(shortList(b))}</span>`;
+  function tuneHTML(p) {
+    if (!p.tune) {
+      if (p.tier < 5) return '<span class="muted">No tuning (Tier ' + p.tier + ')</span>';
+      return '<span class="muted">Any</span><span class="sub">not needed</span>';
+    }
+    if (p.tune.kind === 'bal') return `Balanced<span class="sub">+1 ${p.tune.stats.map(s => SH[s]).join(', ')}</span>`;
+    return `${ab(p.tune.plus)}<span class="sub">+5 ${N[p.tune.plus]}, −5 ${N[p.tune.minus]}</span>`;
+  }
+  function tertHTML(p) {
+    const opts = D.tertOptions(p.arch);
+    if (p.tertLocked) return `${p.ter} ${ab(p.tert)}`;
+    if (p.tertAlts.length === opts.length) return '<span>Any</span><span class="sub">doesn\'t matter</span>';
+    return `${p.ter} ${p.tertAlts.map(ab).join(' or ')}${p.tertAlts.length > 1 ? '<span class="sub">any of these</span>' : ''}`;
+  }
+
+  // ---------- left column ----------
+  function renderTargets() {
+    const tb = $('#targets'); tb.innerHTML = '';
+    for (let s = 0; s < 6; s++) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${full(s)}</td>
+        <td style="width:100%"><input type="range" min="0" max="200" step="5" value="${S.targets[s]}" aria-label="${N[s]} target"></td>
+        <td class="c"><input type="number" min="0" max="200" step="5" value="${S.targets[s]}" class="num" aria-label="${N[s]} target"></td>
+        <td class="c"><input type="checkbox" ${S.prio[s] ? 'checked' : ''} aria-label="${N[s]} is a priority"></td>`;
+      const [rg, nb, cb] = tr.querySelectorAll('input');
+      rg.addEventListener('input', () => { edited(1); S.targets[s] = +rg.value; nb.value = rg.value; schedule(); });
+      nb.addEventListener('change', () => { edited(1); const v = clamp(Math.round(+nb.value || 0), 0, 200); S.targets[s] = v; nb.value = v; rg.value = v; schedule(0); });
+      cb.addEventListener('change', () => { edited(1); S.prio[s] = cb.checked ? 1 : 0; schedule(0); });
+      tb.appendChild(tr);
+    }
+  }
+  function renderFrags() {
+    const box = $('#frags'); box.innerHTML = '';
+    for (let s = 0; s < 6; s++) {
+      const l = document.createElement('div');
+      l.className = 'fragrow';
+      l.innerHTML = `<span>${full(s)}</span><span class="stepper">
+        <button type="button" class="sbtn" data-d="-10" aria-label="Lower ${N[s]} fragment bonus by 10">−</button>
+        <input type="number" min="-100" max="100" step="10" value="${S.frags[s]}" class="num" aria-label="${N[s]} fragment bonus">
+        <button type="button" class="sbtn" data-d="10" aria-label="Raise ${N[s]} fragment bonus by 10">+</button></span>`;
+      const inp = l.querySelector('input');
+      const paint = () => { inp.classList.toggle('neg', +inp.value < 0); inp.classList.toggle('pos', +inp.value > 0); };
+      const setV = (v) => { edited(2); v = clamp(Math.round(+v || 0), -100, 100); S.frags[s] = v; inp.value = v; paint(); schedule(250); };
+      paint();
+      inp.addEventListener('change', () => setV(inp.value));
+      l.querySelectorAll('.sbtn').forEach(bt => bt.addEventListener('click', () => setV(S.frags[s] + +bt.dataset.d)));
+      box.appendChild(l);
+    }
+  }
+  function renderBudget() {
+    const total = S.targets.reduce((a, b) => a + b, 0);
+    const avail = R && !R.error ? R.avail : null;
+    $('#budget').innerHTML = avail == null ? `Your targets add up to <b class="num">${total}</b>.`
+      : `Your targets add up to <b class="num">${total}</b>. Your armor, mods and fragments can give about <b class="num">${avail}</b>. ` +
+        (total > avail ? `<span class="bad">That's ${total - avail} more than is possible.</span>` : '<span class="ok">That fits.</span>');
+  }
+  function renderLockWarn() {
+    const n = placedCount();
+    const unticked = S.slots.filter(sp => sp.mode === 'arch' && !S.pool[sp.arch]).length;
+    $$('.lockwarn').forEach(el => {
+      el.innerHTML = n ? `<div class="warnline">${LOCK_SVG}<span><b>${n} armor piece${n > 1 ? 's are' : ' is'} placed</b> in the Step 5 checklist. Changes here re-plan the other slots around ${n > 1 ? 'them' : 'it'}.${unticked && el.closest('#step3') ? ` ${unticked} placed piece${unticked > 1 ? 's use' : ' uses'} an archetype you've unticked; ${unticked > 1 ? 'they still count' : 'it still counts'}.` : ''} <button class="btn link" data-go="step5">Go to checklist</button></span></div>` : '';
+    });
+    $$('.lockwarn [data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+  }
+  function renderTier() {
+    const box = $('#tierSeg'); box.innerHTML = '';
+    [1, 2, 3, 4, 5].forEach(t => {
+      const b = document.createElement('button');
+      b.textContent = 'Tier ' + t; b.setAttribute('aria-pressed', S.farmTier === t);
+      b.addEventListener('click', () => { edited(3); S.farmTier = t; renderTier(); schedule(0); });
+      box.appendChild(b);
+    });
+    const tm = TIERS[S.farmTier];
+    $('#tierNote').textContent = S.farmTier === 5
+      ? 'Tier 5: 30 / 25 / 20 on every piece, plus a tuning slot. Pieces you place can still be any tier.'
+      : `Tier ${S.farmTier}: planned with a typical roll of ${tm.pri} / ${tm.sec} / ${tm.ter} (real rolls are ${tm.range}) and no tuning. Treat the results as estimates. Pieces you place can be any tier.`;
+  }
+  function renderArch() {
+    const tb = $('#arch'); tb.innerHTML = '';
+    const use = {};
+    if (R && R.priority) R.priority.forEach(p => { use[p.arch] = p.pct; });
+    const placed = new Set(S.slots.filter(sp => sp.mode === 'arch').map(sp => sp.arch));
+    A.forEach((a, i) => {
+      const tr = document.createElement('tr');
+      if (!S.pool[i]) tr.className = 'off';
+      const pct = S.pool[i] && use[i] != null ? Math.round(use[i] * 100) : null;
+      tr.innerHTML = `<td class="c"><input type="checkbox" ${S.pool[i] ? 'checked' : ''} aria-label="Use ${a.name}"></td>
+        <td class="name"><b>${a.name}</b>${placed.has(i) ? '<span class="ptag">placed</span>' : ''}</td>
+        <td style="color:var(--s${a.p})">${N[a.p]}</td><td style="color:var(--s${a.s})">${N[a.s]}</td>
+        <td class="c">${pct == null ? '<span class="muted">—</span>' : `<span class="num usepct${pct >= 50 ? ' hi' : pct === 0 ? ' lo' : ''}">${pct}%</span>`}</td>`;
+      tr.addEventListener('click', (e) => {
+        S.pool[i] = e.target.tagName === 'INPUT' ? (e.target.checked ? 1 : 0) : (S.pool[i] ? 0 : 1);
+        edited(3); renderArch(); schedule(0);
+      });
+      tb.appendChild(tr);
+    });
+  }
+  $$('[data-preset]').forEach(b => b.addEventListener('click', () => {
+    const p = b.dataset.preset;
+    S.pool = A.map((a, i) => p === 'all' ? 1 : p === 'launch' ? (LAUNCH_IDX.includes(i) ? 1 : 0) : 0);
+    edited(3); renderArch(); schedule(0);
+  }));
+
+  // ---------- results ----------
+  function allBuilds() { const out = []; R.shapes.forEach(sh => sh.builds.forEach((b, i) => out.push({ key: sh.key, opt: i, b }))); return out; }
+  function bestMix() {
+    let b = null;
+    for (const sh of R.shapes) { const x = sh.builds[0]; if (!b || D.compareBuilds(x, b.b) < 0) b = { b: x, key: sh.key }; }
+    return b;
+  }
+  function onResults(r) {
+    R = r;
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    if (!R.error) {
+      // keep the build the user chose if the same archetypes still exist after a change
+      let keep = null;
+      if (!sel.auto && sel.archs) keep = allBuilds().find(x => archKey(x.b) === sel.archs);
+      if (keep) { sel.key = keep.key; sel.opt = keep.opt; }
+      else { const best = bestMix(); sel = { key: best ? best.key : null, opt: 0, archs: best ? archKey(best.b) : null, auto: true }; }
+    }
+    picked = null;
+    renderBudget(); renderStatus(); renderArch(); renderMixes(); renderChecklist(); renderTotals(); renderCollection(); renderConfirms();
+  }
+  function current() {
+    if (!R || R.error) return null;
+    const sh = R.shapes.find(s => s.key === sel.key);
+    if (!sh) return null;
+    return { sh, b: sh.builds[Math.min(sel.opt, sh.builds.length - 1)] };
+  }
+
+  function renderStatus() {
+    const el = $('#status'); el.className = 'status';
+    const busyTag = ' <span class="busy" hidden>Updating…</span>';
+    el.hidden = false;
+    if (R.error) { showNext(3); el.classList.add('badc'); el.innerHTML = `<div class="big">Nothing to search yet</div><p>${esc(R.error)}${busyTag}</p>`; return; }
+    const best = bestMix();
+    if (!best) { showNext(3); el.classList.add('badc'); el.innerHTML = `<div class="big">No builds found</div><p>Tick more archetypes in Step 3.${busyTag}</p>`; return; }
+    const n = placedCount();
+    const lockNote = n ? ` Planning around the ${n} piece${n > 1 ? 's' : ''} you've placed.` : '';
+    const total = S.targets.reduce((a, b) => a + b, 0);
+    el.hidden = false;
+    if (total === 0) { el.hidden = true; showNext(1); return; }
+    if (R.bestShort === 0) {
+      const k = R.shapes.filter(s => s.builds[0].short === 0).length;
+      el.classList.add('good');
+      el.innerHTML = `<div class="big">✓ All of your target stats are reachable</div><p>${k} of ${R.shapes.length} set mixes hit every target. The easiest one to farm is picked in Step 4.${lockNote}${busyTag}</p>`;
+    } else {
+      el.classList.add('badc');
+      const why = total > R.avail ? `Your targets add up to ${total}, but the most your gear can give is about ${R.avail}.` : 'The total fits, but the archetypes\' stat pairs can\'t line up exactly with this spread.';
+      el.innerHTML = `<div class="big">✗ Can't hit every target. The best build is ${R.bestShort} point${R.bestShort > 1 ? 's' : ''} short.</div><p>${why} Lower a target, or tick Priority on the stats that matter most so the others fall short instead.${lockNote}${busyTag}</p>`;
+    }
+    // Tier 1-4 stats are random, so anything planned with them is only an estimate
+    const lowPlaced = S.slots.filter(sp => sp.mode === 'arch' && sp.tier < 5).length;
+    if (S.farmTier < 5 || lowPlaced) {
+      const who = S.farmTier < 5 ? `You're planning with Tier ${S.farmTier} armor` : `${lowPlaced} placed piece${lowPlaced > 1 ? 's are' : ' is'} Tier 1 to 4`;
+      el.insertAdjacentHTML('beforeend', `<div class="warnline" style="margin:12px 0 0"><span aria-hidden="true">⚠</span><span><b>Result is not exact.</b> ${who}. Tier 1 to 4 stats roll randomly (often a few points off in each stat), so in-game totals can differ from what's shown here. Enter the real numbers for any Tier 1 to 4 piece you place in Step 5.</span></div>`);
+    }
+    // what the player should do next
+    const step = n >= 5 ? 0 : n > 0 ? 5 : !S.done[1] ? 1 : !S.done[2] ? 2 : !S.done[3] ? 3 : !S.done[4] ? 4 : 5;
+    showNext(step);
+  }
+  function showNext(step) { const bar = $('#nextBar'); bar.innerHTML = nextStepHTML(step); wireNext(bar); }
+  // A big banner in the colour of the step the player is most likely on
+  function nextStepHTML(step) {
+    const n = placedCount();
+    const T = {
+      1: ['Set the stats you want', S.targets.some(x => x) ? 'Adjust the sliders in Step 1, then press "Confirm target stats".' : 'Every target is at 0 right now. Drag the sliders (or type numbers) in Step 1, then press "Confirm target stats".'],
+      2: ['Add fragment bonuses', 'Press − or + for any stats your subclass fragments change, then press "Confirm fragments". No fragments? Just confirm.'],
+      3: ['Choose archetypes and tier', 'Untick archetypes you can\'t farm and pick the tier you\'re farming, then press "Confirm archetypes and tier".'],
+      4: ['Pick a build to farm', 'Compare the set mixes in Step 4, click the row you want (the easiest is already selected), then press "Confirm this build".'],
+      5: ['Farm your pieces', `${n} of 5 found. Exact match: tick its box in Step 5 and pick the slot. Close but mixed: click the matching parts to build it in the Your drop row, then pick the slot.`],
+      0: ['Build complete', 'All 5 slots are filled. Check the Total stats table, or press Reset planner to start a new build.']
+    }[step];
+    const c = step ? `var(--c${step})` : 'var(--good)';
+    return `<div class="nextstep" style="--sc:${c}">
+      <span class="badge">${step || '✓'}</span>
+      <div class="ns-text"><div class="ns-kicker">${step ? 'You are on Step ' + step : 'All done'}</div><div class="ns-title">${T[0]}</div><div class="ns-desc">${T[1]}</div></div>
+      ${step ? `<button class="btn ns-go" data-gostep="step${step}">Go to Step ${step}</button>` : ''}
+    </div>`;
+  }
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-gostep2]'); if (b) go(b.dataset.gostep2); });
+  function wireNext(el) { el.querySelectorAll('[data-gostep]').forEach(b => b.addEventListener('click', () => go(b.dataset.gostep))); }
+
+  function renderMixes() {
+    const tb = $('#mixes'); tb.innerHTML = '';
+    if (R.error) return;
+    const best = bestMix();
+    if (sel.opt > 0 && sel.key) expanded.add(sel.key);
+    const parts = (m, max) => { if (m === 0) return [[]]; const r = []; for (let k = Math.min(m, max); k >= 1; k--) for (const rest of parts(m - k, k)) r.push([k, ...rest]); return r; };
+    const tuneCount = (b) => b.slots.filter(p => p.tune && p.tune.kind === 'dir' && p.tune.farm).length;
+    const rollTxt = (b) => b.open === 0 ? 'All known' : b.picky ? `${b.picky} of ${b.open} must match` : 'Any roll works';
+    const choose = (key, opt, b) => { const same = sel.key === key && sel.opt === opt; sel = { key, opt, archs: archKey(b), auto: false }; if (!same) edited(4); renderConfirms(); renderStatus(); renderMixes(); renderChecklist(); renderTotals(); };
+    parts(R.nLeg, R.nLeg).map(p => p.join('+')).forEach(key => {
+      const sh = R.shapes.find(s => s.key === key);
+      if (!sh) {
+        const tr = document.createElement('tr'); tr.className = 'none';
+        tr.innerHTML = `<td></td><td><b>${MIX_NAME[key] || key}</b></td><td colspan="5" class="muted">Not possible with the archetypes you've ticked${placedCount() ? ' and the pieces you\'ve placed' : ''}</td>`;
+        tb.appendChild(tr); return;
+      }
+      sh.builds.forEach((b, i) => {
+        if (i > 0 && !expanded.has(key)) return;
+        const tr = document.createElement('tr');
+        tr.className = (i === 0 ? 'main' : 'alt') + (key === sel.key && i === sel.opt ? ' sel' : '');
+        const tc = tuneCount(b);
+        const moreBtn = i === 0 && sh.builds.length > 1 ? `<button class="btn small more" data-more="${key}">${expanded.has(key) ? 'Hide others' : `${sh.builds.length - 1} more`}</button>` : '';
+        const isSel = key === sel.key && i === sel.opt;
+        tr.innerHTML = `<td class="c"><span class="radio${isSel ? ' on' : ''}" role="radio" aria-checked="${isSel}" aria-label="Select this build"></span></td><td>${i === 0 ? `<b>${MIX_NAME[key] || key}</b>${best && key === best.key ? '<span class="tag">BEST</span>' : ''}` : `Option ${i + 1}`}</td>
+          <td>${mixHTML(b)}</td><td class="res">${resultHTML(b)}</td><td>${rollTxt(b)}</td><td>${R.farmTier < 5 && !tc ? '<span class="muted">—</span>' : tc ? `${tc} to farm` : 'None'}</td><td>${moreBtn}</td>`;
+        tr.addEventListener('click', (e) => {
+          if (e.target.dataset.more) { const k = e.target.dataset.more; expanded.has(k) ? expanded.delete(k) : expanded.add(k); renderMixes(); return; }
+          choose(key, i, b);
+        });
+        tb.appendChild(tr);
+      });
+    });
+  }
+
+  // ---------- step 5: checklist + your armor ----------
+  function needed(b) { return b.slots.filter(p => !p.locked); }
+  function ownedMatches(p) {
+    return S.collection.filter(c => c.arch === p.arch && S.slots[c.slot].mode === 'free' && (c.tert < 0 || p.tertAlts.includes(c.tert)) && (c.tier || 5) >= 1);
+  }
+  function nextOrder() { return S.slots.reduce((m, sp) => Math.max(m, sp.order || 0), 0) + 1; }
+  function renumber() {
+    const placed = S.slots.map((sp, k) => ({ sp, k })).filter(x => x.sp.mode !== 'free').sort((x, y) => x.sp.order - y.sp.order);
+    placed.forEach((x, i) => { x.sp.order = i + 1; });
+  }
+  function addToCollection(spec, slot) {
+    const id = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const entry = spec.mode === 'custom'
+      ? { id, slot, arch: 'custom', stats: spec.stats.slice() }
+      : { id, slot, arch: spec.arch, tert: spec.tert, tune: spec.tune, tuneUse: spec.tuneUse, tuneMinus: spec.tuneMinus, tier: spec.tier, vals: spec.vals ? spec.vals.slice() : null, set: spec.set >= 0 ? spec.set : -1 };
+    S.collection.unshift(entry);
+    return id;
+  }
+  function syncCollection(sp) {
+    if (!sp.cid) return;
+    const c = S.collection.find(x => x.id === sp.cid);
+    if (!c) return;
+    if (sp.mode === 'custom') c.stats = sp.stats.slice();
+    else Object.assign(c, { arch: sp.arch, tert: sp.tert, tune: sp.tune, tuneUse: sp.tuneUse, tuneMinus: sp.tuneMinus, tier: sp.tier, vals: sp.vals ? sp.vals.slice() : null, set: sp.set >= 0 ? sp.set : -1 });
+  }
+  function rowKey(p, occ) {
+    return `${p.arch}-${p.tertAlts.join('')}-${p.tune ? (p.tune.kind === 'dir' ? 'd' + p.tune.plus : 'b') : 'n'}-${p.mod}-${occ}`;
+  }
+  // Exact match: place the row as planned
+  function place(p, slot) {
+    if (S.slots[slot].mode !== 'free') return;
+    const tm = TIERS[p.tier];
+    const dir = p.tune && p.tune.kind === 'dir', bal = p.tune && p.tune.kind === 'bal';
+    const spec = { mode: 'arch', arch: p.arch, tier: p.tier, order: nextOrder(), tert: p.tert,
+      tune: dir ? p.tune.plus : -1,
+      tuneUse: p.tier < 5 ? 'auto' : dir ? 'dir' : bal ? 'bal' : 'auto',
+      tuneMinus: dir ? p.tune.minus : -1, mod: -1, set: -1 };
+    if (p.tier < 5) spec.vals = [tm.pri, tm.sec, tm.ter];
+    spec.cid = addToCollection(spec, slot);
+    S.slots[slot] = spec;
+    picked = null; drop = newDrop(); schedule(0);
+  }
+  // Mixed: place what was built in the Your drop row
+  function placeDrop(slot) {
+    if (S.slots[slot].mode !== 'free' || drop.arch < 0) return;
+    const tier = drop.tier || S.farmTier, tm = TIERS[tier];
+    const spec = { mode: 'arch', arch: drop.arch, tier, order: nextOrder(),
+      tert: D.tertOptions(drop.arch).includes(drop.tert) ? drop.tert : -1,
+      tune: tier === 5 && drop.tune >= 0 ? drop.tune : -1,
+      tuneUse: tier === 5 && drop.tune === -2 ? 'bal' : 'auto', tuneMinus: -1,
+      mod: drop.mod, set: drop.set };
+    if (tier < 5) spec.vals = [tm.pri, tm.sec, tm.ter];
+    spec.cid = addToCollection(spec, slot);
+    S.slots[slot] = spec;
+    picked = null; drop = newDrop(); schedule(0);
+  }
+  // Clicking a part of a row loads it into Your drop (click again to take it back out)
+  function loadPart(field, value, key, p) {
+    drop.note = '';
+    if (drop.src[field] === key && drop[field] === value) { drop[field] = -1; delete drop.src[field]; return; }
+    if (field === 'tert' && drop.arch >= 0 && !D.tertOptions(drop.arch).includes(value)) { drop.note = `${N[value]} can't be the 3rd stat on a ${A[drop.arch].name} (it's one of its main stats).`; return; }
+    drop[field] = value; drop.src[field] = key;
+    if (field !== 'arch' && drop.arch < 0) { drop.arch = p.arch; drop.src.arch = key; drop.tier = p.tier; }
+    if (field === 'arch') drop.tier = p.tier;
+    if (drop.arch >= 0 && drop.tert >= 0 && !D.tertOptions(drop.arch).includes(drop.tert)) { drop.tert = -1; delete drop.src.tert; drop.note = `3rd stat cleared: it's a main stat on a ${A[drop.arch].name}.`; }
+  }
+  function useOwned(c) {
+    if (S.slots[c.slot].mode !== 'free' && !confirm(`Replace what's in your ${SLOT[c.slot]} slot?`)) return;
+    S.slots[c.slot] = c.arch === 'custom'
+      ? { mode: 'custom', stats: c.stats.slice(), order: nextOrder(), cid: c.id }
+      : cleanSlot({ mode: 'arch', arch: c.arch, tert: c.tert, tune: c.tune, tuneUse: c.tuneUse, tuneMinus: c.tuneMinus, tier: c.tier || 5, vals: c.vals, set: c.set, order: nextOrder(), cid: c.id });
+    renumber(); schedule(0);
+  }
+
+  function renderDropRow(tb) {
+    const head = document.createElement('tr'); head.className = 'bhead';
+    head.innerHTML = `<td colspan="7"><b>Your drop</b> <span class="muted">for a close but mixed piece. Click parts in the rows above, or set them here.</span>${drop.arch >= 0 ? ' <button class="btn small" data-clear>Clear</button>' : ''}${drop.note ? `<div class="dnote">${esc(drop.note)}</div>` : ''}</td>`;
+    tb.appendChild(head);
+    const tr = document.createElement('tr'); tr.className = 'builder' + (drop.arch >= 0 ? ' ready' : '');
+    const a = drop.arch >= 0 ? A[drop.arch] : null;
+    const tier = drop.tier || S.farmTier, tm = TIERS[tier];
+    const filled = (f) => (f === 'tune' ? drop.tune !== -1 : drop[f] >= 0) ? ' filled' : '';
+    const free = [0, 1, 2, 3, 4].filter(k => S.slots[k].mode === 'free');
+    tr.innerHTML = `<td class="c"><span class="plus">+</span></td>
+      <td class="${filled('arch')}"><select data-d="arch" aria-label="Your drop archetype">${opt(-1, 'Pick archetype', drop.arch)}${A.map(x => opt(x.i, x.name, drop.arch)).join('')}</select>
+        <label class="fl">Tier <select data-d="tier" aria-label="Your drop tier">${[5, 4, 3, 2, 1].map(t => opt(t, 'Tier ' + t, tier)).join('')}</select></label>
+        <label class="fl">Set <select data-d="set" aria-label="Your drop armor set">${setOptions(drop.set)}</select></label></td>
+      <td>${a ? mainStats(drop.arch, tm.pri, tm.sec) : '<span class="muted">—</span>'}</td>
+      <td class="${filled('tert')}"><select data-d="tert" aria-label="Your drop 3rd stat" ${a ? '' : 'disabled'}>${opt(-1, 'Not sure', drop.tert)}${a ? D.tertOptions(drop.arch).map(t => opt(t, `${tm.ter} ${N[t]}`, drop.tert)).join('') : ''}</select></td>
+      <td class="${filled('tune')}">${tier === 5 ? `<select data-d="tune" aria-label="Your drop tuned stat">${opt(-1, 'Not sure', drop.tune)}${opt(-2, 'Balanced (+1 to 3 lowest)', drop.tune)}${[0, 1, 2, 3, 4, 5].map(t => opt(t, N[t] + ' (+5 / −5)', drop.tune)).join('')}</select>` : '<span class="muted">No tuning</span>'}</td>
+      <td class="${filled('mod')}"><select data-d="mod" aria-label="Your drop mod">${opt(-1, 'Planner picks', drop.mod)}${[0, 1, 2, 3, 4, 5].map(t => opt(t, '+10 ' + N[t], drop.mod)).join('')}</select></td>
+      <td class="wrapc">${a ? `<div class="slotpick"><span class="lbl">Which slot did it drop in?</span>${free.map(k => `<button class="btn primary small" data-dslot="${k}">${SLOT[k]}</button>`).join('')}</div>` : '<span class="muted">Pick an archetype first</span>'}</td>`;
+    tb.appendChild(tr);
+    head.querySelectorAll('[data-clear]').forEach(x => x.addEventListener('click', () => { drop = newDrop(); renderChecklist(); }));
+    tr.querySelectorAll('select[data-d]').forEach(sel => sel.addEventListener('change', () => {
+      const f = sel.dataset.d, v = +sel.value;
+      drop[f] = v; delete drop.src[f];
+      if (f === 'arch' && drop.tert >= 0 && (v < 0 || !D.tertOptions(v).includes(drop.tert))) { drop.tert = -1; delete drop.src.tert; }
+      if (f === 'tier' && v < 5) { drop.tune = -1; delete drop.src.tune; }
+      renderChecklist();
+    }));
+    tr.querySelectorAll('[data-dslot]').forEach(x => x.addEventListener('click', () => placeDrop(+x.dataset.dslot)));
+  }
+  // What placed pieces already give, and what the rest of the plan adds
+  function soFarVec(b) {
+    const v = S.frags.slice();
+    b.slots.forEach(p => {
+      if (!p.locked) return;
+      const arm = p.custom ? p.stats : D.pieceVec(p.arch, p.tert, p.pri, p.sec, p.ter);
+      for (let st = 0; st < 6; st++) v[st] += arm[st] | 0;
+      if (p.tune && p.tune.kind === 'dir') { v[p.tune.plus] += 5; v[p.tune.minus] -= 5; }
+      if (p.tune && p.tune.kind === 'bal') p.tune.stats.forEach(st => v[st] += 1);
+      if (p.mod >= 0) v[p.mod] += 10;
+    });
+    return v;
+  }
+  function renderTracker(b, preview) {
+    const tb = $('#tracker'); if (!tb) return;
+    tb.innerHTML = '';
+    const so = soFarVec(b), fin = preview ? preview.alt.final : b.final;
+    const placed = placedCount();
+    for (let st = 0; st < 6; st++) {
+      const T = R.T[st], f = clamp(fin[st], 0, 200), sf = clamp(so[st], 0, 200), rest = fin[st] - so[st];
+      const pctSo = Math.min(sf, 200) / 2, pctRest = Math.max(0, Math.min(f, 200) - sf) / 2;
+      const d = f - T;
+      const status = T === 0 ? '<span class="muted">—</span>' : d >= 0 ? `<span class="ok">✓</span>` : `<span class="bad">${d}</span>`;
+      const changed = preview && fin[st] !== b.final[st];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${full(st)}</td>
+        <td><div class="tbar" role="img" aria-label="${N[st]}: ${sf} so far, ${f} planned, target ${T}">
+          <span class="seg-so" style="width:${pctSo}%;background:var(--s${st})"></span><span class="seg-rest" style="left:${pctSo}%;width:${pctRest}%;--c:var(--s${st})"></span>
+          ${T ? `<span class="tick" style="left:${Math.min(T, 200) / 2}%"></span>` : ''}</div></td>
+        <td class="c num"><b>${so[st]}</b></td>
+        <td class="c num">${placed >= 5 ? '<span class="muted">—</span>' : (rest >= 0 ? '+' : '−') + Math.abs(rest)}</td>
+        <td class="c num${changed ? ' chg' : ''}"><b>${f}</b> ${status}</td>
+        <td class="c num">${T}</td>`;
+      tb.appendChild(tr);
+    }
+    const note = $('#previewNote');
+    if (!preview) { note.classList.add('idle'); note.innerHTML = 'Hover (or tab to) a 3rd stat option in the rows below to preview how it adds up.'; return; }
+    note.classList.remove('idle');
+    const { p, t, alt } = preview;
+    const pm = b.planMods, pt = b.planTune, msgs = [];
+    const fromTo = (a, bb, unit) => {
+      const out = []; const lost = [], gained = [];
+      for (let st = 0; st < 6; st++) { const dd = bb[st] - a[st]; if (dd < 0) lost.push([st, -dd]); if (dd > 0) gained.push([st, dd]); }
+      if (!lost.length && !gained.length) return '';
+      return `${unit}: ${lost.map(([st, n]) => `${N[st]} ${unit === 'Mods' ? '−' + n + ' × +10' : '−' + n}`).join(', ')}${lost.length && gained.length ? ' → ' : ''}${gained.map(([st, n]) => `${N[st]} ${unit === 'Mods' ? '+' + n + ' × +10' : '+' + n}`).join(', ')}`;
+    };
+    const mm = fromTo(pm, alt.mods, 'Mods'), tt = fromTo(pt, alt.tune, 'Tuning');
+    const same = alt.final.every((x, i) => x === b.final[i]);
+    note.innerHTML = `<b>Preview: row ${preview.row} rolls 20 ${N[t]}</b>${p.tert === t ? ' (this is the planned option)' : ''}. That piece gives <b>+20 ${N[t]}</b> instead of +20 ${N[p.tert]}. ` +
+      (mm || tt ? `To keep the totals, the planner moves: ${[mm, tt].filter(Boolean).join('; ')}. ` : 'Nothing else needs to move. ') +
+      (same ? '<span class="ok">Final totals stay the same.</span>'
+        : alt.final.every((x, i) => clamp(x, 0, 200) >= R.T[i] || clamp(x, 0, 200) >= clamp(b.final[i], 0, 200))
+          ? '<span class="ok">Still hits every target</span> (a few totals land slightly differently, highlighted).'
+          : '<span class="bad">Some totals end lower (highlighted).</span>');
+  }
+  function step5Open() { return !!S.done[4] || placedCount() > 0; }
+  function renderChecklist() {
+    const open = step5Open();
+    $('#step5lock').hidden = open; $('#step5body').hidden = !open;
+    const tb = $('#check'), sb = $('#slots');
+    tb.innerHTML = ''; sb.innerHTML = '';
+    const cur = current();
+    const n = placedCount();
+    $('#progLbl').textContent = `${n} of 5 pieces found`;
+    $('#progBar').style.width = (n / 5 * 100) + '%';
+    if (!cur) { $('#buildName').innerHTML = ''; tb.innerHTML = '<tr><td colspan="7" class="muted">Pick a build in Step 4 first.</td></tr>'; renderSlots(null); return; }
+    const { sh, b } = cur;
+    $('#buildName').innerHTML = `${MIX_NAME[sh.key] || sh.key}: ${mixHTML(b)}`;
+    const db = $('#doneBanner');
+    db.hidden = n < 5;
+    if (n === 5) db.innerHTML = b.short === 0 ? '✓ Build complete. Every slot is filled and every target is hit.' : `Every slot is filled. This set ends up ${b.short} points short: ${esc(shortList(b))}.`;
+
+    // found pieces first (in the order found), then what's still needed
+    const got = b.slots.filter(p => p.locked).sort((x, y) => (S.slots[x.slot].order || 0) - (S.slots[y.slot].order || 0));
+    got.forEach(p => {
+      const sp = S.slots[p.slot];
+      const tr = document.createElement('tr'); tr.className = 'got';
+      tr.innerHTML = p.custom
+        ? `<td><span class="box on">✓</span></td><td><b>Exotic / other</b></td><td colspan="4" class="muted">Your own stats</td><td><span class="order">#${sp.order}</span> ${SLOT[p.slot]}</td>`
+        : `<td><span class="box on">✓</span></td><td><b>${A[p.arch].name}</b>${p.tier < 5 ? ` <span class="muted">T${p.tier}</span>` : ''}</td><td>${mainStats(p.arch, p.pri, p.sec)}</td><td>${p.tertLocked ? `${p.ter} ${ab(p.tert)}` : '<span class="muted">not set</span>'}</td>
+           <td>${tuneHTML(p)}${p.tune && p.tune.applied ? '<span class="sub">applied</span>' : ''}</td><td>${p.mod >= 0 ? `+10 ${ab(p.mod)}` : '<span class="muted">Free</span>'}</td><td><span class="order">#${sp.order}</span> ${SLOT[p.slot]}</td>`;
+      tb.appendChild(tr);
+    });
+    const occ = {};
+    let rowNo = 0;
+    needed(b).forEach((p) => {
+      const base = rowKey(p, 0).replace(/-0$/, '');
+      occ[base] = (occ[base] || 0) + 1;
+      const key = rowKey(p, occ[base]);
+      rowNo++;
+      const rowNoHere = rowNo;
+      const on = (f, v) => drop.src[f] === key && (v === undefined || drop[f] === v) ? ' on' : '';
+      const tr = document.createElement('tr');
+      const placing = picked && picked.id === key;
+      tr.className = 'need' + (placing ? ' picked' : '');
+      tr.draggable = true;
+      const owned = ownedMatches(p);
+      const ownNote = owned.length ? `<div class="own">You already own ${owned.length > 1 ? owned.length + ' that fit' : 'one'}: ${owned.slice(0, 2).map(c => `${SLOT[c.slot]}${c.set >= 0 ? ' (' + esc(setName(c.set)) + ')' : ''}${c.tert >= 0 ? ', ' + N[c.tert] : ''} <button class="btn link" data-own="${c.id}">Use it</button>`).join('; ')}</div>` : '';
+      const opts = D.tertOptions(p.arch);
+      const tVal = p.tune && p.tune.kind === 'dir' ? p.tune.plus : -2;
+      let tertCell;
+      if (p.tertAlts.length === opts.length) tertCell = `<td>Any<span class="sub">doesn't matter</span></td>`;
+      else if (p.tertAlts.length === 1) tertCell = `<td class="mk${on('tert', p.tertAlts[0])}" data-mk="tert" data-val="${p.tertAlts[0]}" title="Click to load into Your drop">${p.ter} ${ab(p.tertAlts[0])}</td>`;
+      else tertCell = `<td>${p.tertAlts.map(t => `<span class="chip3${on('tert', t)}" data-mk="tert" data-val="${t}" title="Click to load into Your drop">${p.ter} ${ab(t)}</span>`).join('')}<span class="sub">either works, hover to see how</span></td>`;
+      const tuneCell = p.tune ? `<td class="mk${on('tune', tVal)}" data-mk="tune" data-val="${tVal}" title="Click to load into Your drop">${tuneHTML(p)}</td>` : `<td>${tuneHTML(p)}</td>`;
+      const modCell = p.mod >= 0 ? `<td class="mk${on('mod', p.mod)}" data-mk="mod" data-val="${p.mod}" title="Click to load into Your drop">+10 ${ab(p.mod)}</td>` : '<td><span class="muted">Free</span></td>';
+      const free = [0, 1, 2, 3, 4].filter(k => S.slots[k].mode === 'free');
+      const status = placing
+        ? `<div class="slotpick"><span class="lbl">Exact match. Which slot did it drop in?</span>${free.map(k => `<button class="btn primary small" data-slot="${k}">${SLOT[k]}</button>`).join('')}<button class="btn small" data-cancel>Cancel</button></div>`
+        : `<span class="muted">Not found yet</span>${ownNote}`;
+      tr.innerHTML = `<td><span class="rowno">${rowNo}</span><button class="boxbtn" data-tick title="Exact match: place it in a slot" aria-label="Exact match, place this piece"><span class="box${placing ? ' on' : ''}">${placing ? '…' : ''}</span></button></td>
+        <td class="mk${on('arch', p.arch)}" data-mk="arch" data-val="${p.arch}" title="Click to load into Your drop"><b>${A[p.arch].name}</b>${p.tier < 5 ? ` <span class="muted">T${p.tier}</span>` : ''}</td>
+        <td>${mainStats(p.arch, p.pri, p.sec)}</td>${tertCell}${tuneCell}${modCell}
+        <td class="wrapc">${status}</td>`;
+      tr.addEventListener('click', (e) => {
+        const t = e.target.closest('[data-own],[data-tick],[data-slot],[data-cancel],[data-mk]');
+        if (!t) return;
+        if (t.dataset.own) { useOwned(S.collection.find(c => c.id === t.dataset.own)); return; }
+        if (t.hasAttribute('data-tick')) { picked = placing ? null : { id: key, p }; renderChecklist(); return; }
+        if (t.dataset.slot) { place(p, +t.dataset.slot); return; }
+        if (t.hasAttribute('data-cancel')) { picked = null; renderChecklist(); return; }
+        loadPart(t.dataset.mk, +t.dataset.val, key, p);
+        renderChecklist();
+      });
+      tr.querySelectorAll('[data-mk=tert]').forEach(el => {
+        const t = +el.dataset.val, alt = p.altFinal && p.altFinal[t];
+        if (!alt) return;
+        el.tabIndex = 0;
+        const show = () => renderTracker(b, { p, t, alt, row: rowNoHere });
+        el.addEventListener('mouseenter', show); el.addEventListener('focus', show);
+        el.addEventListener('mouseleave', () => renderTracker(b)); el.addEventListener('blur', () => renderTracker(b));
+      });
+      tr.addEventListener('dragstart', (e) => {
+        picked = { id: key, p }; dropped = false;
+        e.dataTransfer.setData('text/plain', key); e.dataTransfer.effectAllowed = 'move';
+        const ghost = document.getElementById('dragGhost');
+        ghost.textContent = `${A[p.arch].name}: drop on a slot`;
+        e.dataTransfer.setDragImage(ghost, 12, 12);
+        renderSlots(cur.b);
+      });
+      tr.addEventListener('dragend', () => { if (!dropped) { picked = null; renderChecklist(); } });
+      tb.appendChild(tr);
+    });
+    if (!needed(b).length && !got.length) tb.innerHTML = '<tr><td colspan="7" class="muted">Nothing to farm.</td></tr>';
+    if (placedCount() < 5) renderDropRow(tb);
+    renderTracker(b);
+    renderSlots(b);
+  }
+
+  const opt = (v, label, s) => `<option value="${v}"${String(v) === String(s) ? ' selected' : ''}>${label}</option>`;
+  function modSelect(sp, p) {
+    const plan = p && p.mod >= 0 && !p.modFixed ? `<span class="sub">planner: +10 ${N[p.mod]}</span>` : '';
+    return `<select data-f="mod" aria-label="Mod on this piece">${opt(-1, 'Planner picks', sp.mod)}${[0, 1, 2, 3, 4, 5].map(s => opt(s, '+10 ' + N[s], sp.mod)).join('')}</select>${plan}`;
+  }
+  function tuningSelect(sp, p) {
+    // when left to the planner, show its current pick as the selected option
+    let cur = sp.tuneUse === 'dir' ? 'dir:' + sp.tuneMinus : sp.tuneUse, plannedVal = '';
+    if (sp.tuneUse === 'auto' && p && p.tune) {
+      if (p.tune.kind === 'bal') plannedVal = 'bal';
+      else if (p.tune.plus === sp.tune) plannedVal = 'dir:' + p.tune.minus;
+      if (plannedVal) cur = plannedVal;
+    }
+    const tag = (v) => v === plannedVal ? ' (planned)' : '';
+    const minusOpts = sp.tune >= 0 ? [0, 1, 2, 3, 4, 5].filter(s => s !== sp.tune).map(s => opt('dir:' + s, `+5 ${N[sp.tune]} / −5 ${N[s]}${tag('dir:' + s)}`, cur)).join('') : '';
+    let note = '';
+    if (sp.tuneUse === 'auto' && !plannedVal) note = 'planner: not needed';
+    if (sp.tuneUse === 'dir' && sp.tune < 0) note = 'set the tuned stat first';
+    return `<select data-tuning aria-label="Tuning mod applied">${opt('auto', 'Let planner decide', cur)}${opt('bal', 'Balanced (+1 to 3 lowest)' + tag('bal'), cur)}${minusOpts}${opt('none', 'None', cur)}</select>${note ? `<span class="sub">${note}</span>` : ''}`;
+  }
+  function renderSetBonus() {
+    const box = $('#setBonus'); if (!box) return;
+    const cnt = {};
+    S.slots.forEach(sp => { if (sp.mode === 'arch' && sp.set >= 0) cnt[sp.set] = (cnt[sp.set] || 0) + 1; });
+    const keys = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
+    if (!keys.length) { box.innerHTML = '<span class="muted">Set bonuses: pick each piece\'s <b>Set</b> above to see which 2-piece and 4-piece bonuses are active.</span>'; return; }
+    box.innerHTML = '<b>Set bonuses</b>' + keys.map(k => {
+      const [name, src, two, four] = SETS[k], n = cnt[k];
+      const st = (need, label) => `<span class="sb ${n >= need ? 'on' : ''}">${n >= need ? '✓' : '○'} ${need}-piece: ${esc(label)}${n >= need ? '' : ` <span class="muted">(${need - n} more)</span>`}</span>`;
+      return `<div class="sbrow"><span class="sbname">${esc(name)} <span class="muted">× ${n}</span></span>${st(2, two)}${st(4, four)}<span class="muted sbsrc">${esc(src)}</span></div>`;
+    }).join('');
+  }
+  function renderSlots(b) {
+    renderSetBonus();
+    const sb = $('#slots'); sb.innerHTML = '';
+    for (let k = 0; k < 5; k++) {
+      const sp = S.slots[k];
+      const tr = document.createElement('tr');
+      const p = b ? b.slots[k] : null;
+      if (sp.mode === 'free') {
+        const dropReady = !picked && drop.arch >= 0;
+        tr.className = 'empty' + (picked || dropReady ? ' target' : '');
+        tr.innerHTML = `<td class="slotname">${SLOT[k]}</td>
+          <td colspan="4">${picked ? `Put the <b>${A[picked.p.arch].name}</b> here?` : dropReady ? `Put your drop (<b>${A[drop.arch].name}</b>) here?` : 'Empty'}</td>
+          <td><div class="acts">${picked ? `<button class="btn primary small" data-place="${k}">Place here</button>` : dropReady ? `<button class="btn primary small" data-placedrop="${k}">Place here</button>` : ''}<button class="btn small" data-exotic="${k}">Add exotic</button></div></td>`;
+        tr.addEventListener('dragover', (e) => { e.preventDefault(); tr.classList.add('dragover'); });
+        tr.addEventListener('dragleave', () => tr.classList.remove('dragover'));
+        tr.addEventListener('drop', (e) => { e.preventDefault(); dropped = true; if (picked) place(picked.p, k); });
+      } else if (sp.mode === 'custom') {
+        tr.className = 'filled';
+        tr.innerHTML = `<td class="slotname">${SLOT[k]}<span class="order">#${sp.order}</span></td>
+          <td><b>Exotic / other</b><span class="sub">final stats, no tuning</span></td>
+          <td colspan="2"><div class="cstats">${[0, 1, 2, 3, 4, 5].map(s => `<label><span style="color:var(--s${s})">${SH[s]}</span><input type="number" min="0" max="100" class="num" data-cs="${s}" value="${sp.stats[s]}" aria-label="${SLOT[k]} ${N[s]}"></label>`).join('')}</div></td>
+          <td>${modSelect(sp, p)}</td>
+          <td><div class="acts"><button class="btn small" data-remove="${k}">Remove</button></div></td>`;
+      } else {
+        tr.className = 'filled';
+        const a = A[sp.arch], tm = TIERS[sp.tier];
+        const vals = sp.tier < 5 ? sp.vals : [tm.pri, tm.sec, tm.ter];
+        const t5 = sp.tier === 5;
+        tr.innerHTML = `<td class="slotname">${SLOT[k]}<span class="order">#${sp.order}</span></td>
+          <td><b>${a.name}</b><span class="sub">${mainStats(sp.arch, vals[0], vals[1])}</span>
+            <label class="fl">Tier <select data-f="tier" aria-label="Tier">${[5, 4, 3, 2, 1].map(t => opt(t, 'Tier ' + t, sp.tier)).join('')}</select></label>
+            <label class="fl">Set <select data-f="set" aria-label="Armor set">${setOptions(sp.set)}</select></label>
+            ${sp.tier < 5 ? `<div class="vals"><label>${SH[a.p]}<input type="number" class="num" data-v="0" value="${vals[0]}" min="0" max="40"></label><label>${SH[a.s]}<input type="number" class="num" data-v="1" value="${vals[1]}" min="0" max="40"></label><label>3rd<input type="number" class="num" data-v="2" value="${vals[2]}" min="0" max="40"></label></div>` : ''}</td>
+          <td class="${sp.tert < 0 ? 'attn' : ''}"><select data-f="tert" aria-label="3rd stat">${opt(-1, 'Not sure', sp.tert)}${D.tertOptions(sp.arch).map(s => opt(s, `${vals[2]} ${N[s]}`, sp.tert)).join('')}</select></td>
+          <td>${t5 ? `<label class="fl">Tuned stat <select data-f="tune" aria-label="Tuned stat">${opt(-1, 'Not recorded', sp.tune)}${[0, 1, 2, 3, 4, 5].map(s => opt(s, N[s], sp.tune)).join('')}</select></label>
+            <label class="fl">Tuning mod ${tuningSelect(sp, p)}</label>` : '<span class="muted">No tuning (Tier ' + sp.tier + ')</span>'}</td>
+          <td>${modSelect(sp, p)}</td>
+          <td><div class="acts"><button class="btn small" data-remove="${k}">Remove</button></div></td>`;
+      }
+      sb.appendChild(tr);
+      tr.querySelectorAll('[data-place]').forEach(x => x.addEventListener('click', () => place(picked.p, k)));
+      tr.querySelectorAll('[data-placedrop]').forEach(x => x.addEventListener('click', () => placeDrop(k)));
+      tr.querySelectorAll('[data-exotic]').forEach(x => x.addEventListener('click', () => {
+        const spec = { mode: 'custom', stats: [0, 0, 0, 0, 0, 0], order: nextOrder(), mod: -1 };
+        spec.cid = addToCollection(spec, k); S.slots[k] = spec; picked = null; schedule(0);
+      }));
+      tr.querySelectorAll('[data-remove]').forEach(x => x.addEventListener('click', () => { S.slots[k] = { mode: 'free' }; renumber(); schedule(0); }));
+      tr.querySelectorAll('select[data-f]').forEach(s2 => s2.addEventListener('change', () => {
+        const f = s2.dataset.f, v = +s2.value;
+        sp[f] = v;
+        if (f === 'tier') { const t = TIERS[v]; sp.vals = v < 5 ? [t.pri, t.sec, t.ter] : undefined; if (v < 5) { sp.tune = -1; sp.tuneUse = 'auto'; } }
+        if (f === 'tune' && sp.tuneUse === 'dir' && (v < 0 || v === sp.tuneMinus)) { sp.tuneUse = 'auto'; sp.tuneMinus = -1; }
+        syncCollection(sp); schedule(0);
+      }));
+      tr.querySelectorAll('select[data-tuning]').forEach(s2 => s2.addEventListener('change', () => {
+        const v = s2.value;
+        if (v.startsWith('dir:')) { sp.tuneUse = 'dir'; sp.tuneMinus = +v.slice(4); } else { sp.tuneUse = v; sp.tuneMinus = -1; }
+        syncCollection(sp); schedule(0);
+      }));
+      tr.querySelectorAll('[data-v]').forEach(inp => inp.addEventListener('change', () => {
+        const v = clamp(Math.round(+inp.value || 0), 0, 40); inp.value = v; sp.vals[+inp.dataset.v] = v; syncCollection(sp); schedule(0);
+      }));
+      tr.querySelectorAll('[data-cs]').forEach(inp => inp.addEventListener('change', () => {
+        const v = clamp(Math.round(+inp.value || 0), 0, 100); inp.value = v; sp.stats[+inp.dataset.cs] = v; syncCollection(sp); schedule(0);
+      }));
+    }
+  }
+
+  function renderTotals() {
+    const tb = $('#totals'); tb.innerHTML = '';
+    const cur = current();
+    if (!cur) return;
+    const { b } = cur, P = b.parts;
+    const sign = (v) => v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0';
+    for (let s = 0; s < 6; s++) {
+      const T = R.T[s], fin = clamp(b.final[s], 0, 200), d = fin - T;
+      const tune = P.tuneUp[s] - P.tuneDown[s];
+      const vs = T === 0 && d >= 0 ? '<span class="muted">—</span>' : d === 0 ? '<span class="ok">✓ exact</span>' : d > 0 ? `<span class="ok">✓ +${d}</span>` : `<span class="bad">✗ ${-d} short</span>`;
+      let bd = `${P.math[s].join(' + ')} <span class="muted">(armor)</span>`;
+      const add = (v, what) => { if (v) bd += ` ${v > 0 ? '+' : '−'} ${Math.abs(v)} <span class="muted">(${what})</span>`; };
+      add(P.mods[s], 'mods'); add(P.tuneUp[s], 'tuning'); add(-P.tuneDown[s], 'tuning'); add(P.frag[s], 'fragments');
+      const cap = b.final[s] > 200 ? ` <span class="muted">(${b.final[s] - 200} wasted over the 200 cap)</span>` : '';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${full(s)}</td><td class="c num">${T}</td><td class="c num">${P.armor[s]}</td><td class="c num">${sign(P.mods[s])}</td>
+        <td class="c num">${sign(tune)}</td><td class="c num">${sign(P.frag[s])}</td><td class="c num final">${fin}</td><td class="c">${vs}</td>
+        <td class="bd num">${bd} = ${b.final[s]}${cap}</td>`;
+      tb.appendChild(tr);
+    }
+  }
+
+  // ---------- my armor tab ----------
+  function renderCollection() {
+    $('#collCount').textContent = S.collection.length;
+    const tb = $('#coll'); tb.innerHTML = '';
+    if (!S.collection.length) { tb.innerHTML = '<tr><td colspan="9" class="empty-note">Nothing saved yet. Pieces you place in the Step 5 checklist show up here.</td></tr>'; return; }
+    S.collection.forEach(c => {
+      const inUse = S.slots.some(sp => sp.cid === c.id);
+      const tr = document.createElement('tr');
+      if (c.arch === 'custom') {
+        tr.innerHTML = `<td><b>${SLOT[c.slot]}</b></td><td><b>Exotic / other</b></td><td class="muted">—</td><td class="muted">—</td>
+          <td colspan="3">${c.stats.map((v, s) => v ? `${v} ${ab(s)}` : '').filter(Boolean).join(SEP) || '<span class="muted">no stats</span>'}</td>`;
+      } else {
+        const tier = c.tier || 5, tm = TIERS[tier], vals = tier < 5 && c.vals ? c.vals : [tm.pri, tm.sec, tm.ter];
+        tr.innerHTML = `<td><b>${SLOT[c.slot]}</b></td><td><b>${A[c.arch].name}</b></td><td>${c.set >= 0 ? esc(setName(c.set)) : '<span class="muted">—</span>'}</td><td>Tier ${tier}</td><td>${mainStats(c.arch, vals[0], vals[1])}</td>
+          <td>${c.tert >= 0 ? `${vals[2]} ${ab(c.tert)}` : '<span class="muted">not set</span>'}</td>
+          <td>${tier < 5 ? '<span class="muted">none</span>' : `${c.tune >= 0 ? ab(c.tune) : '<span class="muted">not recorded</span>'}${c.tuneUse === 'bal' ? '<span class="sub">Balanced applied</span>' : c.tuneUse === 'dir' && c.tuneMinus >= 0 ? `<span class="sub">+5 / −5 ${N[c.tuneMinus]} applied</span>` : ''}`}</td>`;
+      }
+      tr.innerHTML += `<td>${inUse ? '<span class="ok">✓ In use</span>' : '<span class="muted">No</span>'}</td>
+        <td><div class="acts">${inUse ? '' : '<button class="btn small" data-use>Put in build</button>'}<button class="btn small" data-del>Delete</button></div></td>`;
+      const u = tr.querySelector('[data-use]');
+      if (u) u.addEventListener('click', () => { useOwned(c); showPage('planner'); go('step5'); });
+      tr.querySelector('[data-del]').addEventListener('click', () => {
+        if (!confirm('Delete this piece from My armor?')) return;
+        S.collection = S.collection.filter(x => x.id !== c.id);
+        S.slots.forEach(sp => { if (sp.cid === c.id) sp.cid = null; });
+        save(); renderCollection(); if (R) renderChecklist();
+      });
+      tb.appendChild(tr);
+    });
+  }
+
+  // ---------- navigation, look, footer ----------
+  function showPage(p) {
+    page = p;
+    $('#pagePlanner').hidden = p !== 'planner';
+    $('#pageCollection').hidden = p !== 'collection';
+    $('#pageGuide').hidden = p !== 'guide';
+    window.scrollTo({ top: 0 });
+    $$('[data-page]').forEach(b => b.setAttribute('aria-selected', b.dataset.page === p ? 'true' : 'false'));
+  }
+  $$('[data-page]').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
+  $$('[data-page-go]').forEach(b => b.addEventListener('click', () => showPage(b.dataset.pageGo)));
+  function go(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // only scroll if the section's heading isn't already comfortably on screen
+    const r = el.getBoundingClientRect();
+    const onScreen = r.top >= 0 && r.top <= window.innerHeight * 0.7;
+    if (!onScreen) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.classList.remove('flash');
+    clearTimeout(go.t1); clearTimeout(go.t2);
+    // blink right away if no scroll was needed, otherwise once the scroll has landed
+    const wait = onScreen ? 0 : 450;
+    go.t1 = setTimeout(() => { void el.offsetWidth; el.classList.add('flash'); }, wait);
+    go.t2 = setTimeout(() => el.classList.remove('flash'), wait + 3500);
+  }
+  $$('.stepcard').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+  function applyHowto() { $('#howtoBody').hidden = S.howtoHidden; $('#howtoToggle').textContent = S.howtoHidden ? 'Show' : 'Hide'; }
+  $('#howtoToggle').addEventListener('click', () => { S.howtoHidden = !S.howtoHidden; applyHowto(); save(); });
+
+  const mql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+  function applyTheme() {
+    const t = S.theme || (mql && mql.matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', t);
+    $$('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === t ? 'true' : 'false'));
+  }
+  $$('[data-mode]').forEach(b => b.addEventListener('click', () => { S.theme = b.dataset.mode; applyTheme(); save(); }));
+  if (mql && mql.addEventListener) mql.addEventListener('change', () => { if (!S.theme) applyTheme(); });
+  function renderSwatches() {
+    const box = $('#swatches'); box.innerHTML = '';
+    ACCENTS.forEach(([name, c], i) => {
+      const b = document.createElement('button');
+      b.className = 'sw'; b.style.setProperty('--sw', c); b.title = name; b.setAttribute('aria-label', name + ' accent'); b.setAttribute('aria-pressed', S.accent === i);
+      b.addEventListener('click', () => { S.accent = i; applyAccent(); renderSwatches(); save(); });
+      box.appendChild(b);
+    });
+  }
+  function applyAccent() { document.documentElement.style.setProperty('--accent', ACCENTS[S.accent][1]); document.documentElement.style.setProperty('--accent-ink', ACCENTS[S.accent][2]); }
+  $('#share').addEventListener('click', async () => {
+    const btn = $('#share');
+    const url = location.href.split('#')[0] + '#' + btoa(unescape(encodeURIComponent(JSON.stringify(planState()))));
+    try { await navigator.clipboard.writeText(url); btn.textContent = 'Link copied'; } catch (e) { window.prompt('Copy this link:', url); }
+    setTimeout(() => { btn.textContent = 'Copy share link'; }, 1600);
+  });
+  $('#reset').addEventListener('click', () => {
+    if (!confirm('Reset targets, fragments, archetypes and the checklist? Your saved armor in "My armor" is kept.')) return;
+    Object.assign(S, DEFAULT()); S.done = { 1: false, 2: false, 3: false, 4: false }; picked = null; expanded = new Set(); sel = { key: null, opt: 0, archs: null, auto: true };
+    initInputs(); schedule(0);
+  });
+
+  // ---------- step-by-step confirm buttons ----------
+  const CONFIRM = {
+    1: ['Confirm target stats', 'Next: fragment bonuses', 'step2'],
+    2: ['Confirm fragments', 'Next: archetypes and tier', 'step3'],
+    3: ['Confirm archetypes and tier', 'Next: pick a build', 'step4'],
+    4: ['Confirm this build', 'Next: farm your pieces in Step 5', 'step5']
+  };
+  function edited(n) {
+    let ch = false;
+    if (S.done[n]) { S.done[n] = false; ch = true; }
+    if (n < 4 && S.done[4]) { S.done[4] = false; ch = true; }
+    if (ch) { renderConfirms(); if (R) renderChecklist(); }
+  }
+  function renderConfirms() {
+    $$('[data-confirm]').forEach(box => {
+      const n = +box.dataset.confirm, [label, next, target] = CONFIRM[n];
+      const blocked = n === 1 && !S.targets.some(x => x);
+      const blocked3 = n === 3 && !S.pool.some(x => x);
+      const blocked4 = n === 4 && !(R && !R.error && current());
+      if (S.done[n]) {
+        box.innerHTML = `<div class="cf-done"><span>✓ Confirmed</span><span class="muted">Change anything above to edit it again.</span><button class="btn small" data-next="${target}">${next} →</button></div>`;
+      } else {
+        const selName = n === 4 && !blocked4 ? `<span class="cf-sel">Selected: <b>${MIX_NAME[current().sh.key] || ''}</b> ${mixHTML(current().b)}</span>` : '';
+        box.innerHTML = `${selName}<button class="btn cf-btn" ${blocked || blocked3 || blocked4 ? 'disabled' : ''}>${label}</button>${blocked ? '<span class="muted">Set at least one stat first.</span>' : blocked3 ? '<span class="muted">Tick at least one archetype first.</span>' : blocked4 ? '<span class="muted">Waiting for builds.</span>' : `<span class="muted">${next}</span>`}`;
+      }
+      const btn = box.querySelector('.cf-btn');
+      if (btn) btn.addEventListener('click', () => { S.done[n] = true; save(); renderConfirms(); if (R) { renderStatus(); renderChecklist(); } go(target); });
+      const nx = box.querySelector('[data-next]');
+      if (nx) nx.addEventListener('click', () => go(nx.dataset.next));
+      const panel = document.getElementById('step' + n);
+      panel.classList.toggle('confirmed', !!S.done[n]);
+      const card = document.querySelector(`.stepcard[data-go="step${n}"]`);
+      if (card) card.classList.toggle('confirmed', !!S.done[n]);
+    });
+  }
+  $('#resetTargets').addEventListener('click', () => { edited(1); S.targets = [0, 0, 0, 0, 0, 0]; S.prio = [0, 0, 0, 0, 0, 0]; renderTargets(); schedule(0); });
+  $('#resetFrags').addEventListener('click', () => { edited(2); S.frags = [0, 0, 0, 0, 0, 0]; renderFrags(); schedule(0); });
+  function initInputs() { renderTargets(); renderFrags(); renderTier(); renderArch(); renderBudget(); renderLockWarn(); renderCollection(); renderConfirms(); }
+  applyTheme(); applyAccent(); applyHowto(); renderSwatches(); initInputs(); run();
+})();
+</script>
 </body>
-
 </html>
